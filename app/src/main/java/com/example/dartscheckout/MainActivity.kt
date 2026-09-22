@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DartsApp() {
     var screen by remember { mutableStateOf("main") }
-    var selectedRange by remember { mutableStateOf(60..89) }
+    var selectedRange by remember { mutableStateOf(60..99) }
     var selectedNumber by remember { mutableStateOf<Int?>(null) }
 
     when {
@@ -103,41 +103,47 @@ fun MainMenuScreen(
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
+        // Верхний ряд: 60–99 | 100–134
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            BigButton("60–89", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(60..89) }
-            BigButton("90–119", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(90..119) }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            BigButton("120–139", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(120..139) }
-            BigButton("140–170", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(140..170) }
+            BigButton("60–99", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(60..99) }
+            BigButton("100–134", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(100..134) }
         }
 
+        // Нижний ряд: 135–170 | (Калькулятор / Настройки)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp),
+                .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SmallButton(
-                label = "Настройки\nи инструкция",
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                onClick = onSettings
-            )
-            SmallButton(
-                label = "Калькулятор",
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                onClick = onCalculator
-            )
+            BigButton("135–170", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(135..170) }
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SmallButton(
+                    label = "Калькулятор",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    onClick = onCalculator
+                )
+                SmallButton(
+                    label = "Настройки\nи инструкция",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    onClick = onSettings
+                )
+            }
         }
     }
 }
