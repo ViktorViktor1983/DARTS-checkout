@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.dartscheckout"
+        applicationId = "com.dartscheckout.viktor"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
