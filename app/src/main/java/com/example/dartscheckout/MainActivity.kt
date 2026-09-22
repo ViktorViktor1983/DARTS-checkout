@@ -151,6 +151,7 @@ fun NumberTile(number: Int, onClick: () -> Unit) {
 @Composable
 fun CalculatorScreen(onBack: () -> Unit) {
     var display by remember { mutableStateOf("0") }
+    var sequence by remember { mutableStateOf<List<String>>(emptyList()) }
     var accumulator by remember { mutableStateOf<Double?>(null) }
     var pendingOp by remember { mutableStateOf<String?>(null) }
     var replaceOnNext by remember { mutableStateOf(true) }
@@ -171,27 +172,37 @@ fun CalculatorScreen(onBack: () -> Unit) {
         replaceOnNext = true
     }
     fun onDigit(d: String) {
+        sequence = emptyList()
         if (replaceOnNext) { display = d; replaceOnNext = false }
         else display = if (display == "0") d else display + d
     }
     fun onDot() {
+        sequence = emptyList()
         if (replaceOnNext) { display = "0."; replaceOnNext = false }
         else if (!display.contains(".")) display += "."
     }
-    fun onDart(score: Int) {
+    fun onDart(dart: Dart) {
         val cur = display.toDoubleOrNull() ?: 0.0
-        display = fmtNumber(cur + score)
+        val newVal = if (replaceOnNext || sequence.isEmpty()) {
+            cur + dart.score
+        } else {
+            cur + dart.score
+        }
+        display = fmtNumber(newVal)
+        sequence = sequence + dart.toString()
         replaceOnNext = true
     }
     fun onOp(op: String) {
+        sequence = emptyList()
         if (pendingOp != null && !replaceOnNext) compute()
         accumulator = display.toDoubleOrNull() ?: 0.0
         pendingOp = op
         replaceOnNext = true
     }
-    fun onEq() { if (pendingOp != null) compute() }
-    fun onClear() { display = "0"; accumulator = null; pendingOp = null; replaceOnNext = true }
+    fun onEq() { sequence = emptyList(); if (pendingOp != null) compute() }
+    fun onClear() { display = "0"; sequence = emptyList(); accumulator = null; pendingOp = null; replaceOnNext = true }
     fun onBackspace() {
+        sequence = emptyList()
         if (replaceOnNext) display = "0"
         else display = if (display.length > 1) display.dropLast(1) else "0"
     }
@@ -209,13 +220,30 @@ fun CalculatorScreen(onBack: () -> Unit) {
             Text("Калькулятор", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
 
-        Box(
+        // Дисплей: слева — последовательность, справа — число
+        Row(
             modifier = Modifier.fillMaxWidth().height(64.dp)
                 .clip(RoundedCornerShape(14.dp)).background(TileBgDark)
                 .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterEnd
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(display, color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(
+                text = sequence.joinToString("+"),
+                color = Accent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f),
+                maxLines = 3,
+                softWrap = true
+            )
+            Text(
+                text = display,
+                color = Color.White,
+                fontSize = 34.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                textAlign = TextAlign.End
+            )
         }
 
         Column(
@@ -227,9 +255,10 @@ fun CalculatorScreen(onBack: () -> Unit) {
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    // Порядок: T (утроение), S (сектор), D (удвоение)
+                    DartCell(Dart(n, 3), Modifier.weight(1f)) { onDart(it) }
                     DartCell(Dart(n, 1), Modifier.weight(1f)) { onDart(it) }
                     DartCell(Dart(n, 2), Modifier.weight(1f)) { onDart(it) }
-                    DartCell(Dart(n, 3), Modifier.weight(1f)) { onDart(it) }
                 }
             }
         }
@@ -242,6 +271,7 @@ fun CalculatorScreen(onBack: () -> Unit) {
                 CalcBtn("C", Modifier.weight(1f)) { onClear() }
                 CalcBtn("⌫", Modifier.weight(1f)) { onBackspace() }
                 CalcBtn("%", Modifier.weight(1f)) {
+                    sequence = emptyList()
                     display = fmtNumber((display.toDoubleOrNull() ?: 0.0) / 100.0)
                     replaceOnNext = true
                 }
@@ -275,11 +305,11 @@ fun CalculatorScreen(onBack: () -> Unit) {
 }
 
 @Composable
-fun DartCell(dart: Dart, modifier: Modifier, onClick: (Int) -> Unit) {
+fun DartCell(dart: Dart, modifier: Modifier, onClick: (Dart) -> Unit) {
     Box(
         modifier = modifier.fillMaxHeight()
             .clip(RoundedCornerShape(8.dp)).background(TileBg)
-            .clickable { onClick(dart.score) },
+            .clickable { onClick(dart) },
         contentAlignment = Alignment.Center
     ) {
         Text(dart.toString(), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
