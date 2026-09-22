@@ -6,6 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -45,12 +48,29 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DartsApp() {
     var screen by remember { mutableStateOf("main") }
+    var selectedRange by remember { mutableStateOf(60..89) }
+    var selectedNumber by remember { mutableStateOf<Int?>(null) }
 
     when {
         screen == "main" -> MainMenuScreen(
-            onRangeClick = { screen = "range:$it" },
+            onRangeClick = { range ->
+                selectedRange = range
+                screen = "range"
+            },
             onSettings = { screen = "settings" },
             onCalculator = { screen = "calc" }
+        )
+        screen == "range" -> RangeScreen(
+            range = selectedRange,
+            onNumberClick = { n ->
+                selectedNumber = n
+                screen = "number"
+            },
+            onBack = { screen = "main" }
+        )
+        screen == "number" -> PlaceholderScreen(
+            title = "Число ${selectedNumber ?: ""}",
+            onBack = { screen = "range" }
         )
         screen == "settings" -> PlaceholderScreen(
             title = "Настройки и инструкция",
@@ -60,19 +80,12 @@ fun DartsApp() {
             title = "Калькулятор",
             onBack = { screen = "main" }
         )
-        screen.startsWith("range:") -> {
-            val range = screen.removePrefix("range:")
-            PlaceholderScreen(
-                title = "Диапазон $range",
-                onBack = { screen = "main" }
-            )
-        }
     }
 }
 
 @Composable
 fun MainMenuScreen(
-    onRangeClick: (String) -> Unit,
+    onRangeClick: (IntRange) -> Unit,
     onSettings: () -> Unit,
     onCalculator: () -> Unit
 ) {
@@ -90,15 +103,14 @@ fun MainMenuScreen(
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        // 4 больших квадрата 2x2
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            BigButton("60–89", Modifier.weight(1f).fillMaxHeight()) { onRangeClick("60-89") }
-            BigButton("90–120", Modifier.weight(1f).fillMaxHeight()) { onRangeClick("90-120") }
+            BigButton("60–89", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(60..89) }
+            BigButton("90–119", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(90..119) }
         }
         Row(
             modifier = Modifier
@@ -106,11 +118,10 @@ fun MainMenuScreen(
                 .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            BigButton("121–140", Modifier.weight(1f).fillMaxHeight()) { onRangeClick("121-140") }
-            BigButton("141–170", Modifier.weight(1f).fillMaxHeight()) { onRangeClick("141-170") }
+            BigButton("120–139", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(120..139) }
+            BigButton("140–170", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(140..170) }
         }
 
-        // 2 кнопки снизу
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -128,6 +139,75 @@ fun MainMenuScreen(
                 onClick = onCalculator
             )
         }
+    }
+}
+
+@Composable
+fun RangeScreen(
+    range: IntRange,
+    onNumberClick: (Int) -> Unit,
+    onBack: () -> Unit
+) {
+    val numbers = remember(range) { range.toList() }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(TileBgDark)
+                    .clickable { onBack() }
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
+            ) {
+                Text("← Назад", color = Accent, fontSize = 15.sp)
+            }
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = "${range.first}–${range.last}",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(5),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(numbers) { n ->
+                NumberTile(n) { onNumberClick(n) }
+            }
+        }
+    }
+}
+
+@Composable
+fun NumberTile(number: Int, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(14.dp))
+            .background(TileBg)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = number.toString(),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White
+        )
     }
 }
 
