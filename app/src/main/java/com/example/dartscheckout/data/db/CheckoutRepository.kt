@@ -5,12 +5,17 @@ import com.example.dartscheckout.data.DEFAULT_CHECKOUTS
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class CheckoutRepository(
-    private val dao: CheckoutDao
-) {
+class CheckoutRepository(private val dao: CheckoutDao) {
 
     fun observeForNumber(num: Int): Flow<List<CheckoutVariant>> =
         dao.observeForNumber(num).map { list -> list.map { it.toDomain() } }
+
+    suspend fun getAllOnce(): Map<Int, List<CheckoutVariant>> =
+        dao.getAll()
+            .groupBy { it.targetNumber }
+            .mapValues { (_, list) ->
+                list.sortedBy { it.orderIndex }.map { it.toDomain() }
+            }
 
     suspend fun seedIfEmpty() {
         if (dao.count() == 0) {
