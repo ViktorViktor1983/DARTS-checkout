@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,17 +31,28 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Create keystore if missing
+      - name: Prepare stable keystore
         run: |
           mkdir -p ~/.android
-          if [ ! -f ~/.android/debug.keystore ]; then
+          if [ -f keystore/debug.keystore ]; then
+            cp keystore/debug.keystore ~/.android/debug.keystore
+            echo "Keystore loaded from repository."
+          else
+            mkdir -p keystore
             keytool -genkeypair -v \
-              -keystore ~/.android/debug.keystore \
+              -keystore keystore/debug.keystore \
               -alias androiddebugkey \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -storepass android -keypass android \
               -dname "CN=Android Debug,O=Android,C=US" \
               -storetype JKS
+            cp keystore/debug.keystore ~/.android/debug.keystore
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add keystore/debug.keystore
+            git commit -m "Add stable debug keystore [skip ci]"
+            git push
+            echo "Keystore created and saved to repository."
           fi
 
       - name: Build debug APK
