@@ -35,6 +35,7 @@ val GoldAccent = Color(0xFFFFD54F)
 val MainVariantColor = Color(0xFF4FC3F7)
 val AltVariantColor = Color(0xFFFFFFFF)
 val BackupVariantColor = Color(0xFFB39DDB)
+val MissVariantColor = Color(0xFFFFAB91)
 val ImpossibleBg = Color(0xFF5C2B3A)
 val ImpossibleText = Color(0xFFEF9A9A)
 
@@ -57,119 +58,166 @@ val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
     60 to listOf(CheckoutVariant("Основной", listOf("S20", "D20"))),
     61 to listOf(
         CheckoutVariant("Основной", listOf("T15", "D8")),
+        CheckoutVariant("Промах T15", listOf("S15", "S10", "D18")),
         CheckoutVariant("Альтернативный", listOf("25", "D18")),
-        CheckoutVariant("Запасной", listOf("T11", "D14"))
+        CheckoutVariant("Запасной", listOf("T11", "D14")),
+        CheckoutVariant("Промах T11", listOf("S11", "S14", "D16"))
     ),
     62 to listOf(
         CheckoutVariant("Основной", listOf("T10", "D16")),
-        CheckoutVariant("Альтернативный", listOf("T18", "D4"))
+        CheckoutVariant("Промах T10", listOf("S10", "S16", "D10")),
+        CheckoutVariant("Альтернативный", listOf("T18", "D4")),
+        CheckoutVariant("Промах T18", listOf("S18", "S10", "D12"))
     ),
     63 to listOf(
         CheckoutVariant("Основной", listOf("T13", "D12")),
-        CheckoutVariant("Альтернативный", listOf("T17", "D6"))
+        CheckoutVariant("Промах T13", listOf("S13", "S14", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T17", "D6")),
+        CheckoutVariant("Промах T17", listOf("S17", "S10", "D10"))
     ),
     64 to listOf(
         CheckoutVariant("Основной", listOf("T16", "D8")),
-        CheckoutVariant("Альтернативный", listOf("T8", "D20"))
+        CheckoutVariant("Промах T16", listOf("S16", "S16", "D8")),
+        CheckoutVariant("Альтернативный", listOf("T8", "D20")),
+        CheckoutVariant("Промах T8", listOf("S8", "S16", "D16"))
     ),
     65 to listOf(
         CheckoutVariant("Основной", listOf("T19", "D4")),
+        CheckoutVariant("Промах T19", listOf("S19", "S10", "D18")),
         CheckoutVariant("Альтернативный", listOf("25", "D20")),
-        CheckoutVariant("Запасной", listOf("T11", "D16"))
+        CheckoutVariant("Запасной", listOf("T11", "D16")),
+        CheckoutVariant("Промах T11", listOf("S11", "S14", "D16"))
     ),
     66 to listOf(
         CheckoutVariant("Основной", listOf("T14", "D12")),
-        CheckoutVariant("Альтернативный", listOf("T10", "D18"))
+        CheckoutVariant("Промах T14", listOf("S14", "S12", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T10", "D18")),
+        CheckoutVariant("Промах T10", listOf("S10", "S16", "D18"))
     ),
     67 to listOf(
         CheckoutVariant("Основной", listOf("T17", "D8")),
-        CheckoutVariant("Альтернативный", listOf("T9", "D20"))
+        CheckoutVariant("Промах T17", listOf("S17", "S10", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T9", "D20")),
+        CheckoutVariant("Промах T9", listOf("S9", "S18", "D20"))
     ),
     68 to listOf(
         CheckoutVariant("Основной", listOf("T20", "D4")),
-        CheckoutVariant("Альтернативный", listOf("T16", "D10"))
+        CheckoutVariant("Промах T20", listOf("S20", "S8", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T16", "D10")),
+        CheckoutVariant("Промах T16", listOf("S16", "S12", "D20"))
     ),
     69 to listOf(
         CheckoutVariant("Основной", listOf("T19", "D6")),
-        CheckoutVariant("Альтернативный", listOf("T15", "D12"))
+        CheckoutVariant("Промах T19", listOf("S19", "S10", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T15", "D12")),
+        CheckoutVariant("Промах T15", listOf("S15", "S14", "D20"))
     ),
     70 to listOf(
         CheckoutVariant("Основной", listOf("T18", "D8")),
-        CheckoutVariant("Альтернативный", listOf("T10", "D20"))
+        CheckoutVariant("Промах T18", listOf("S18", "S12", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T10", "D20")),
+        CheckoutVariant("Промах T10", listOf("S10", "S20", "D20"))
     ),
     71 to listOf(
         CheckoutVariant("Основной", listOf("T13", "D16")),
-        CheckoutVariant("Альтернативный", listOf("T17", "D10"))
+        CheckoutVariant("Промах T13", listOf("S13", "S18", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T17", "D10")),
+        CheckoutVariant("Промах T17", listOf("S17", "S14", "D20"))
     ),
     72 to listOf(
         CheckoutVariant("Основной", listOf("T16", "D12")),
-        CheckoutVariant("Альтернативный", listOf("T12", "D18"))
+        CheckoutVariant("Промах T16", listOf("S16", "S16", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T12", "D18")),
+        CheckoutVariant("Промах T12", listOf("S12", "S20", "D20"))
     ),
     73 to listOf(
         CheckoutVariant("Основной", listOf("T19", "D8")),
-        CheckoutVariant("Альтернативный", listOf("T15", "D14"))
+        CheckoutVariant("Промах T19", listOf("S19", "S14", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T15", "D14")),
+        CheckoutVariant("Промах T15", listOf("S15", "S18", "D20"))
     ),
     74 to listOf(
         CheckoutVariant("Основной", listOf("T14", "D16")),
-        CheckoutVariant("Альтернативный", listOf("T18", "D10"))
+        CheckoutVariant("Промах T14", listOf("S14", "S20", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T18", "D10")),
+        CheckoutVariant("Промах T18", listOf("S18", "S16", "D20"))
     ),
     75 to listOf(
         CheckoutVariant("Основной", listOf("T17", "D12")),
-        CheckoutVariant("Альтернативный", listOf("T13", "D18"))
+        CheckoutVariant("Промах T17", listOf("S17", "S18", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T13", "D18")),
+        CheckoutVariant("Промах T13", listOf("S13", "S20", "D21"))
     ),
     76 to listOf(
         CheckoutVariant("Основной", listOf("T20", "D8")),
-        CheckoutVariant("Альтернативный", listOf("T16", "D14"))
+        CheckoutVariant("Промах T20", listOf("S20", "S16", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T16", "D14")),
+        CheckoutVariant("Промах T16", listOf("S16", "S20", "D20"))
     ),
     77 to listOf(
         CheckoutVariant("Основной", listOf("T19", "D10")),
-        CheckoutVariant("Альтернативный", listOf("T15", "D16"))
+        CheckoutVariant("Промах T19", listOf("S19", "S18", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T15", "D16")),
+        CheckoutVariant("Промах T15", listOf("S15", "S22", "D20"))
     ),
     78 to listOf(
         CheckoutVariant("Основной", listOf("T18", "D12")),
-        CheckoutVariant("Альтернативный", listOf("T14", "D18"))
+        CheckoutVariant("Промах T18", listOf("S18", "S20", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T14", "D18")),
+        CheckoutVariant("Промах T14", listOf("S14", "S24", "D20"))
     ),
     79 to listOf(
         CheckoutVariant("Основной", listOf("T19", "D11")),
-        CheckoutVariant("Альтернативный", listOf("T13", "D20"))
+        CheckoutVariant("Промах T19", listOf("S19", "S20", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T13", "D20")),
+        CheckoutVariant("Промах T13", listOf("S13", "S26", "D20"))
     ),
     80 to listOf(
         CheckoutVariant("Основной", listOf("T20", "D10")),
+        CheckoutVariant("Промах T20", listOf("S20", "S20", "D20")),
         CheckoutVariant("Альтернативный", listOf("T16", "D16"))
     ),
     81 to listOf(
         CheckoutVariant("Основной", listOf("T19", "D12")),
+        CheckoutVariant("Промах T19", listOf("S19", "S22", "D20")),
         CheckoutVariant("Альтернативный", listOf("T15", "D18"))
     ),
     82 to listOf(
         CheckoutVariant("Основной", listOf("T14", "D20")),
+        CheckoutVariant("Промах T14", listOf("S14", "S28", "D20")),
         CheckoutVariant("Альтернативный", listOf("BULL", "D16"))
     ),
     83 to listOf(CheckoutVariant("Основной", listOf("T17", "D16"))),
     84 to listOf(
         CheckoutVariant("Основной", listOf("T20", "D12")),
+        CheckoutVariant("Промах T20", listOf("S20", "S24", "D20")),
         CheckoutVariant("Альтернативный", listOf("T16", "D18"))
     ),
     85 to listOf(
         CheckoutVariant("Основной", listOf("T15", "D20")),
+        CheckoutVariant("Промах T15", listOf("S15", "S30", "D20")),
         CheckoutVariant("Альтернативный", listOf("T19", "D14"))
     ),
     86 to listOf(CheckoutVariant("Основной", listOf("T18", "D16"))),
     87 to listOf(CheckoutVariant("Основной", listOf("T17", "D18"))),
     88 to listOf(
         CheckoutVariant("Основной", listOf("T16", "D20")),
+        CheckoutVariant("Промах T16", listOf("S16", "S32", "D20")),
         CheckoutVariant("Альтернативный", listOf("T20", "D14"))
     ),
     89 to listOf(
         CheckoutVariant("Основной", listOf("T19", "D16")),
+        CheckoutVariant("Промах T19", listOf("S19", "S30", "D20")),
         CheckoutVariant("Альтернативный", listOf("T17", "D19"))
     ),
     90 to listOf(
         CheckoutVariant("Основной", listOf("T20", "D15")),
+        CheckoutVariant("Промах T20", listOf("S20", "S30", "D20")),
         CheckoutVariant("Альтернативный", listOf("T18", "D18"))
     ),
     91 to listOf(
         CheckoutVariant("Основной", listOf("T17", "D20")),
+        CheckoutVariant("Промах T17", listOf("S17", "S34", "D20")),
         CheckoutVariant("Альтернативный", listOf("T19", "D17"))
     ),
     92 to listOf(CheckoutVariant("Основной", listOf("T20", "D16"))),
@@ -245,6 +293,7 @@ val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
     120 to listOf(CheckoutVariant("Основной", listOf("T20", "S20", "D20"))),
     121 to listOf(
         CheckoutVariant("Основной", listOf("T20", "T11", "D14")),
+        CheckoutVariant("Промах T20", listOf("S20", "T17", "D15")),
         CheckoutVariant("Альтернативный", listOf("T17", "T20", "D5"))
     ),
     122 to listOf(
@@ -464,24 +513,16 @@ fun NumberTile(number: Int, onClick: () -> Unit) {
             .aspectRatio(1f)
             .clip(RoundedCornerShape(14.dp))
             .background(bg)
-            .then(
-                if (impossible) Modifier else Modifier.clickable { onClick() }
-            ),
+            .then(if (impossible) Modifier else Modifier.clickable { onClick() }),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = number.toString(),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = fg
-        )
+        Text(number.toString(), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = fg)
     }
 }
 
 @Composable
 fun NumberScreen(number: Int, onBack: () -> Unit) {
     val variants = CHECKOUTS[number].orEmpty()
-
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -491,24 +532,13 @@ fun NumberScreen(number: Int, onBack: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Text("Закрытие $number", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
-
         Spacer(Modifier.height(16.dp))
-
         if (variants.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Вариантов нет", color = ImpossibleText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(12.dp))
-                    Text(
-                        "Число $number невозможно закрыть за 3 дротика",
-                        color = Accent,
-                        fontSize = 14.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 32.dp)
-                    )
+                    Text("Число $number невозможно закрыть за 3 дротика", color = Accent, fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp))
                 }
             }
         } else {
@@ -524,10 +554,11 @@ fun NumberScreen(number: Int, onBack: () -> Unit) {
 
 @Composable
 fun CheckoutCard(variant: CheckoutVariant) {
-    val color = when (variant.label) {
-        "Основной" -> MainVariantColor
-        "Альтернативный" -> AltVariantColor
-        else -> BackupVariantColor
+    val color = when {
+        variant.label.startsWith("Основной") -> MainVariantColor
+        variant.label.startsWith("Альтернативный") -> AltVariantColor
+        variant.label.startsWith("Запасной") -> BackupVariantColor
+        else -> MissVariantColor
     }
     Box(
         modifier = Modifier
