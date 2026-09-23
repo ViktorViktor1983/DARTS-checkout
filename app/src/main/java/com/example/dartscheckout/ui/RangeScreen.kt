@@ -25,8 +25,17 @@ import com.example.dartscheckout.theme.TileBg
 import com.example.dartscheckout.theme.TileBgDark
 
 @Composable
-fun RangeScreen(range: IntRange, onNumberClick: (Int) -> Unit, onBack: () -> Unit) {
-    val numbers = remember(range) { range.toList() }
+fun RangeScreen(
+    range: IntRange,
+    descending: Boolean,
+    onNumberClick: (Int) -> Unit,
+    onBack: () -> Unit
+) {
+    val numbers = remember(range, descending) {
+        val list = range.toList()
+        if (descending) list.reversed() else list
+    }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -34,7 +43,12 @@ fun RangeScreen(range: IntRange, onNumberClick: (Int) -> Unit, onBack: () -> Uni
                     .clickable { onBack() }.padding(horizontal = 16.dp, vertical = 10.dp)
             ) { Text("← Назад", color = Accent, fontSize = 15.sp) }
             Spacer(Modifier.width(12.dp))
-            Text("${range.first}–${range.last}", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                "${range.first}–${range.last}",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
         }
         Spacer(Modifier.height(16.dp))
         LazyVerticalGrid(
