@@ -53,6 +53,29 @@ class CheckoutRepository(private val dao: CheckoutDao) {
         dao.insertAll(entities)
     }
 
+    /**
+     * Полностью заменяет базу новыми данными (импорт из JSON).
+     */
+    suspend fun replaceAll(checkouts: Map<Int, List<CheckoutVariant>>) {
+        dao.clear()
+        val all = mutableListOf<CheckoutEntity>()
+        checkouts.forEach { (num, variants) ->
+            variants.forEachIndexed { idx, v ->
+                all.add(
+                    CheckoutEntity(
+                        targetNumber = num,
+                        throwsSerialized = v.throws.joinToString(","),
+                        label = v.label,
+                        orderIndex = idx,
+                        isFavorite = idx == 0,
+                        isCustom = false
+                    )
+                )
+            }
+        }
+        dao.insertAll(all)
+    }
+
     suspend fun resetToDefaults() {
         dao.clear()
         seedIfEmpty()
