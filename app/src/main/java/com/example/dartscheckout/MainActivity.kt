@@ -98,7 +98,7 @@ fun MainMenuScreen(
             "Darts Checkout",
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White,
+            color = Accent,
             letterSpacing = 3.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier
