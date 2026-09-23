@@ -29,6 +29,7 @@ val TileBg = Color(0xFF4A6572)
 val TileBgDark = Color(0xFF37474F)
 val Accent = Color(0xFF4FC3F7)
 val OpColor = Color(0xFF0288D1)
+val GoldAccent = Color(0xFFFFD54F)
 
 data class Dart(val sector: Int, val multiplier: Int) {
     val score: Int get() = sector * multiplier
@@ -78,10 +79,7 @@ fun DartsApp() {
             title = "Число ${selectedNumber ?: ""}",
             onBack = { screen = "range" }
         )
-        screen == "settings" -> PlaceholderScreen(
-            title = "Настройки и инструкция",
-            onBack = { screen = "main" }
-        )
+        screen == "settings" -> SettingsScreen(onBack = { screen = "main" })
         screen == "calc" -> CalculatorScreen(onBack = { screen = "main" })
     }
 }
@@ -102,15 +100,50 @@ fun MainMenuScreen(
             color = Color.White, modifier = Modifier.padding(bottom = 4.dp)
         )
         Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            BigButton("60–99", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(60..99) }
-            BigButton("100–134", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(100..134) }
+            RangeButton(60, 99, Modifier.weight(1f).fillMaxHeight()) { onRangeClick(60..99) }
+            RangeButton(100, 134, Modifier.weight(1f).fillMaxHeight()) { onRangeClick(100..134) }
         }
         Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            BigButton("135–170", Modifier.weight(1f).fillMaxHeight()) { onRangeClick(135..170) }
+            RangeButton(135, 170, Modifier.weight(1f).fillMaxHeight()) { onRangeClick(135..170) }
             Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SmallButton("Калькулятор", Modifier.fillMaxWidth().weight(1f), onCalculator)
                 SmallButton("Настройки\nи инструкция", Modifier.fillMaxWidth().weight(1f), onSettings)
             }
+        }
+    }
+}
+
+@Composable
+fun RangeButton(start: Int, end: Int, modifier: Modifier, onClick: () -> Unit) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(24.dp))
+            .background(TileBg)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = start.toString(),
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text(
+                text = "↓",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = Accent
+            )
+            Text(
+                text = end.toString(),
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
         }
     }
 }
@@ -183,12 +216,7 @@ fun CalculatorScreen(onBack: () -> Unit) {
     }
     fun onDart(dart: Dart) {
         val cur = display.toDoubleOrNull() ?: 0.0
-        val newVal = if (replaceOnNext || sequence.isEmpty()) {
-            cur + dart.score
-        } else {
-            cur + dart.score
-        }
-        display = fmtNumber(newVal)
+        display = fmtNumber(cur + dart.score)
         sequence = sequence + dart.toString()
         replaceOnNext = true
     }
@@ -220,7 +248,6 @@ fun CalculatorScreen(onBack: () -> Unit) {
             Text("Калькулятор", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
 
-        // Дисплей: слева — последовательность, справа — число
         Row(
             modifier = Modifier.fillMaxWidth().height(64.dp)
                 .clip(RoundedCornerShape(14.dp)).background(TileBgDark)
@@ -255,7 +282,6 @@ fun CalculatorScreen(onBack: () -> Unit) {
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    // Порядок: T (утроение), S (сектор), D (удвоение)
                     DartCell(Dart(n, 3), Modifier.weight(1f)) { onDart(it) }
                     DartCell(Dart(n, 1), Modifier.weight(1f)) { onDart(it) }
                     DartCell(Dart(n, 2), Modifier.weight(1f)) { onDart(it) }
@@ -325,6 +351,78 @@ fun CalcBtn(label: String, modifier: Modifier, color: Color = TileBgDark, onClic
         contentAlignment = Alignment.Center
     ) {
         Text(label, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+@Composable
+fun SettingsScreen(onBack: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(TileBgDark)
+                    .clickable { onBack() }.padding(horizontal = 16.dp, vertical = 10.dp)
+            ) { Text("← Назад", color = Accent, fontSize = 15.sp) }
+            Spacer(Modifier.width(12.dp))
+            Text("Настройки и инструкция", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "───────  ✦  ───────",
+                color = Accent,
+                fontSize = 16.sp
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = "РАЗРАБОТЧИК",
+                color = Accent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 4.sp
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = "Лодкин Виктор",
+                color = GoldAccent,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Евгеньевич",
+                color = GoldAccent,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = "───────  ✦  ───────",
+                color = Accent,
+                fontSize = 16.sp
+            )
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Text(
+            text = "Darts Checkout v1.0",
+            color = TileBg,
+            fontSize = 13.sp,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
     }
 }
 
