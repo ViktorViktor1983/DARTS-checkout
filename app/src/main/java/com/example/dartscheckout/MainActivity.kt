@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -30,6 +32,9 @@ val TileBgDark = Color(0xFF37474F)
 val Accent = Color(0xFF4FC3F7)
 val OpColor = Color(0xFF0288D1)
 val GoldAccent = Color(0xFFFFD54F)
+val MainVariantColor = Color(0xFF4FC3F7)
+val AltVariantColor = Color(0xFFFFFFFF)
+val BackupVariantColor = Color(0xFFB39DDB)
 
 data class Dart(val sector: Int, val multiplier: Int) {
     val score: Int get() = sector * multiplier
@@ -41,6 +46,318 @@ data class Dart(val sector: Int, val multiplier: Int) {
         else -> "T$sector"
     }
 }
+
+data class CheckoutVariant(val label: String, val throws: List<String>)
+
+// Таблица стандартных чекаутов для 60-170
+val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
+    60 to listOf(CheckoutVariant("Основной", listOf("S20", "D20"))),
+    61 to listOf(
+        CheckoutVariant("Основной", listOf("T15", "D8")),
+        CheckoutVariant("Альтернативный", listOf("25", "D18")),
+        CheckoutVariant("Запасной", listOf("T11", "D14"))
+    ),
+    62 to listOf(
+        CheckoutVariant("Основной", listOf("T10", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T18", "D4"))
+    ),
+    63 to listOf(
+        CheckoutVariant("Основной", listOf("T13", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T17", "D6"))
+    ),
+    64 to listOf(
+        CheckoutVariant("Основной", listOf("T16", "D8")),
+        CheckoutVariant("Альтернативный", listOf("T8", "D20"))
+    ),
+    65 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D4")),
+        CheckoutVariant("Альтернативный", listOf("25", "D20")),
+        CheckoutVariant("Запасной", listOf("T11", "D16"))
+    ),
+    66 to listOf(
+        CheckoutVariant("Основной", listOf("T14", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T10", "D18"))
+    ),
+    67 to listOf(
+        CheckoutVariant("Основной", listOf("T17", "D8")),
+        CheckoutVariant("Альтернативный", listOf("T9", "D20"))
+    ),
+    68 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D4")),
+        CheckoutVariant("Альтернативный", listOf("T16", "D10"))
+    ),
+    69 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D6")),
+        CheckoutVariant("Альтернативный", listOf("T15", "D12"))
+    ),
+    70 to listOf(
+        CheckoutVariant("Основной", listOf("T18", "D8")),
+        CheckoutVariant("Альтернативный", listOf("T10", "D20"))
+    ),
+    71 to listOf(
+        CheckoutVariant("Основной", listOf("T13", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T17", "D10"))
+    ),
+    72 to listOf(
+        CheckoutVariant("Основной", listOf("T16", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T12", "D18"))
+    ),
+    73 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D8")),
+        CheckoutVariant("Альтернативный", listOf("T15", "D14"))
+    ),
+    74 to listOf(
+        CheckoutVariant("Основной", listOf("T14", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T18", "D10"))
+    ),
+    75 to listOf(
+        CheckoutVariant("Основной", listOf("T17", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T13", "D18"))
+    ),
+    76 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D8")),
+        CheckoutVariant("Альтернативный", listOf("T16", "D14"))
+    ),
+    77 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D10")),
+        CheckoutVariant("Альтернативный", listOf("T15", "D16"))
+    ),
+    78 to listOf(
+        CheckoutVariant("Основной", listOf("T18", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T14", "D18"))
+    ),
+    79 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D11")),
+        CheckoutVariant("Альтернативный", listOf("T13", "D20"))
+    ),
+    80 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D10")),
+        CheckoutVariant("Альтернативный", listOf("T16", "D16"))
+    ),
+    81 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T15", "D18"))
+    ),
+    82 to listOf(
+        CheckoutVariant("Основной", listOf("T14", "D20")),
+        CheckoutVariant("Альтернативный", listOf("BULL", "D16"))
+    ),
+    83 to listOf(
+        CheckoutVariant("Основной", listOf("T17", "D16"))
+    ),
+    84 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T16", "D18"))
+    ),
+    85 to listOf(
+        CheckoutVariant("Основной", listOf("T15", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T19", "D14"))
+    ),
+    86 to listOf(
+        CheckoutVariant("Основной", listOf("T18", "D16"))
+    ),
+    87 to listOf(
+        CheckoutVariant("Основной", listOf("T17", "D18"))
+    ),
+    88 to listOf(
+        CheckoutVariant("Основной", listOf("T16", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T20", "D14"))
+    ),
+    89 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T17", "D19"))
+    ),
+    90 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D15")),
+        CheckoutVariant("Альтернативный", listOf("T18", "D18"))
+    ),
+    91 to listOf(
+        CheckoutVariant("Основной", listOf("T17", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T19", "D17"))
+    ),
+    92 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D16"))
+    ),
+    93 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D18"))
+    ),
+    94 to listOf(
+        CheckoutVariant("Основной", listOf("T18", "D20"))
+    ),
+    95 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D19"))
+    ),
+    96 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D18"))
+    ),
+    97 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "D20"))
+    ),
+    98 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D19"))
+    ),
+    99 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "S10", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T20", "S7", "D16"))
+    ),
+    100 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "D20"))
+    ),
+    101 to listOf(
+        CheckoutVariant("Основной", listOf("T17", "BULL")),
+        CheckoutVariant("Альтернативный", listOf("T20", "S9", "D16"))
+    ),
+    102 to listOf(CheckoutVariant("Основной", listOf("T20", "S10", "D16"))),
+    103 to listOf(CheckoutVariant("Основной", listOf("T20", "S11", "D16"))),
+    104 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S12", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T18", "S18", "D16"))
+    ),
+    105 to listOf(CheckoutVariant("Основной", listOf("T20", "S13", "D16"))),
+    106 to listOf(CheckoutVariant("Основной", listOf("T20", "S14", "D16"))),
+    107 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S15", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T19", "S18", "D16"))
+    ),
+    108 to listOf(CheckoutVariant("Основной", listOf("T20", "S16", "D16"))),
+    109 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S17", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T19", "S20", "D16"))
+    ),
+    110 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S18", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T20", "BULL"))
+    ),
+    111 to listOf(CheckoutVariant("Основной", listOf("T20", "S19", "D16"))),
+    112 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S20", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T12", "D8"))
+    ),
+    113 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S13", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T13", "D7"))
+    ),
+    114 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S14", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T14", "D6"))
+    ),
+    115 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S15", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T15", "D5"))
+    ),
+    116 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S16", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T16", "D4"))
+    ),
+    117 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S17", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T17", "D3"))
+    ),
+    118 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "S18", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T18", "D2"))
+    ),
+    119 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "T12", "D13")),
+        CheckoutVariant("Альтернативный", listOf("T20", "S19", "D20"))
+    ),
+    120 to listOf(CheckoutVariant("Основной", listOf("T20", "S20", "D20"))),
+    121 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "T11", "D14")),
+        CheckoutVariant("Альтернативный", listOf("T17", "T20", "D5"))
+    ),
+    122 to listOf(
+        CheckoutVariant("Основной", listOf("T18", "T18", "D7")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T18", "D4")),
+        CheckoutVariant("Запасной", listOf("S18", "T18", "BULL"))
+    ),
+    123 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "T16", "D9")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T13", "D12"))
+    ),
+    124 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "T16", "D8")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T20", "D2"))
+    ),
+    125 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "T19", "D4")),
+        CheckoutVariant("Альтернативный", listOf("BULL", "T17", "D12")),
+        CheckoutVariant("Запасной", listOf("25", "T20", "D20"))
+    ),
+    126 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "T19", "D6")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T16", "D9"))
+    ),
+    127 to listOf(CheckoutVariant("Основной", listOf("T20", "T17", "D8"))),
+    128 to listOf(
+        CheckoutVariant("Основной", listOf("T18", "T18", "D10")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T20", "D4"))
+    ),
+    129 to listOf(
+        CheckoutVariant("Основной", listOf("T19", "T16", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T19", "T20", "D6"))
+    ),
+    130 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "T20", "D5")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T18", "D8")),
+        CheckoutVariant("Запасной", listOf("T19", "T19", "D8"))
+    ),
+    131 to listOf(CheckoutVariant("Основной", listOf("T20", "T13", "D16"))),
+    132 to listOf(
+        CheckoutVariant("Основной", listOf("BULL", "BULL", "D16")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T16", "D12"))
+    ),
+    133 to listOf(CheckoutVariant("Основной", listOf("T20", "T19", "D8"))),
+    134 to listOf(CheckoutVariant("Основной", listOf("T20", "T14", "D16"))),
+    135 to listOf(
+        CheckoutVariant("Основной", listOf("BULL", "T15", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T17", "D12"))
+    ),
+    136 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D8"))),
+    137 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "T19", "D10")),
+        CheckoutVariant("Альтернативный", listOf("T19", "T18", "D13"))
+    ),
+    138 to listOf(CheckoutVariant("Основной", listOf("T20", "T18", "D12"))),
+    139 to listOf(CheckoutVariant("Основной", listOf("T20", "T13", "D20"))),
+    140 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D10"))),
+    141 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "T19", "D12")),
+        CheckoutVariant("Альтернативный", listOf("T19", "T18", "D15"))
+    ),
+    142 to listOf(CheckoutVariant("Основной", listOf("T20", "T14", "D20"))),
+    143 to listOf(CheckoutVariant("Основной", listOf("T20", "T17", "D16"))),
+    144 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D12"))),
+    145 to listOf(CheckoutVariant("Основной", listOf("T20", "T15", "D20"))),
+    146 to listOf(CheckoutVariant("Основной", listOf("T20", "T18", "D16"))),
+    147 to listOf(CheckoutVariant("Основной", listOf("T20", "T17", "D18"))),
+    148 to listOf(CheckoutVariant("Основной", listOf("T20", "T16", "D20"))),
+    149 to listOf(CheckoutVariant("Основной", listOf("T20", "T19", "D16"))),
+    150 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "T20", "D15")),
+        CheckoutVariant("Альтернативный", listOf("T20", "T18", "D18"))
+    ),
+    151 to listOf(CheckoutVariant("Основной", listOf("T20", "T17", "D20"))),
+    152 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D16"))),
+    153 to listOf(CheckoutVariant("Основной", listOf("T20", "T19", "D18"))),
+    154 to listOf(CheckoutVariant("Основной", listOf("T20", "T18", "D20"))),
+    155 to listOf(CheckoutVariant("Основной", listOf("T20", "T19", "D19"))),
+    156 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D18"))),
+    157 to listOf(
+        CheckoutVariant("Основной", listOf("T20", "T19", "D20")),
+        CheckoutVariant("Альтернативный", listOf("T19", "T20", "D20"))
+    ),
+    158 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D19"))),
+    // 159 — невозможный за 3 дротика
+    160 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D20"))),
+    161 to listOf(CheckoutVariant("Основной", listOf("T20", "T17", "BULL"))),
+    // 162, 163 — невозможные
+    164 to listOf(CheckoutVariant("Основной", listOf("T20", "T18", "BULL"))),
+    // 165, 166 — невозможные
+    167 to listOf(CheckoutVariant("Основной", listOf("T20", "T19", "BULL"))),
+    // 168, 169 — невозможные
+    170 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "BULL")))
+)
 
 fun fmtNumber(v: Double): String =
     if (v == v.toLong().toDouble()) v.toLong().toString() else v.toString()
@@ -75,8 +392,8 @@ fun DartsApp() {
             onNumberClick = { n -> selectedNumber = n; screen = "number" },
             onBack = { screen = "main" }
         )
-        screen == "number" -> PlaceholderScreen(
-            title = "Число ${selectedNumber ?: ""}",
+        screen == "number" -> NumberScreen(
+            number = selectedNumber ?: 0,
             onBack = { screen = "range" }
         )
         screen == "settings" -> SettingsScreen(onBack = { screen = "main" })
@@ -101,9 +418,7 @@ fun MainMenuScreen(
             color = Accent,
             letterSpacing = 3.sp,
             textAlign = TextAlign.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp)
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
         )
         Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             RangeButton(60, 99, Modifier.weight(1f).fillMaxHeight()) { onRangeClick(60..99) }
@@ -132,24 +447,9 @@ fun RangeButton(start: Int, end: Int, modifier: Modifier, onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(
-                text = start.toString(),
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-            Text(
-                text = "↓",
-                fontSize = 64.sp,
-                fontWeight = FontWeight.Bold,
-                color = Accent
-            )
-            Text(
-                text = end.toString(),
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Text(start.toString(), fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("↓", fontSize = 64.sp, fontWeight = FontWeight.Bold, color = Accent)
+            Text(end.toString(), fontSize = 48.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }
@@ -184,6 +484,86 @@ fun NumberTile(number: Int, onClick: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Text(number.toString(), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+    }
+}
+
+@Composable
+fun NumberScreen(number: Int, onBack: () -> Unit) {
+    val variants = CHECKOUTS[number].orEmpty()
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(TileBgDark)
+                    .clickable { onBack() }.padding(horizontal = 16.dp, vertical = 10.dp)
+            ) { Text("← Назад", color = Accent, fontSize = 15.sp) }
+            Spacer(Modifier.width(12.dp))
+            Text("Закрытие $number", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        if (variants.isEmpty()) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Вариантов нет", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "Число $number невозможно закрыть за 3 дротика",
+                        color = Accent,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    )
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                variants.forEach { v ->
+                    CheckoutCard(v)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CheckoutCard(variant: CheckoutVariant) {
+    val color = when (variant.label) {
+        "Основной" -> MainVariantColor
+        "Альтернативный" -> AltVariantColor
+        else -> BackupVariantColor
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(TileBgDark)
+            .padding(horizontal = 20.dp, vertical = 18.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = variant.label.uppercase(),
+                color = Accent,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                letterSpacing = 2.sp
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = variant.throws.joinToString("   "),
+                color = color,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -262,20 +642,13 @@ fun CalculatorScreen(onBack: () -> Unit) {
         ) {
             Text(
                 text = sequence.joinToString("+"),
-                color = Accent,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.weight(1f),
-                maxLines = 3,
-                softWrap = true
+                color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Medium,
+                modifier = Modifier.weight(1f), maxLines = 3, softWrap = true
             )
             Text(
                 text = display,
-                color = Color.White,
-                fontSize = 34.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                textAlign = TextAlign.End
+                color = Color.White, fontSize = 34.sp, fontWeight = FontWeight.Bold,
+                maxLines = 1, textAlign = TextAlign.End
             )
         }
 
@@ -362,11 +735,7 @@ fun CalcBtn(label: String, modifier: Modifier, color: Color = TileBgDark, onClic
 
 @Composable
 fun SettingsScreen(onBack: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(TileBgDark)
@@ -375,70 +744,22 @@ fun SettingsScreen(onBack: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Text("Настройки и инструкция", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
-
         Spacer(Modifier.weight(1f))
-
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "───────  ✦  ───────",
-                color = Accent,
-                fontSize = 16.sp
-            )
+            Text("───────  ✦  ───────", color = Accent, fontSize = 16.sp)
             Spacer(Modifier.height(20.dp))
-            Text(
-                text = "РАЗРАБОТЧИК",
-                color = Accent,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 4.sp
-            )
+            Text("РАЗРАБОТЧИК", color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Medium, letterSpacing = 4.sp)
             Spacer(Modifier.height(12.dp))
-            Text(
-                text = "Лодкин Виктор",
-                color = GoldAccent,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "Евгеньевич",
-                color = GoldAccent,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
+            Text("Лодкин Виктор", color = GoldAccent, fontSize = 30.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+            Text("Евгеньевич", color = GoldAccent, fontSize = 30.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
             Spacer(Modifier.height(20.dp))
-            Text(
-                text = "───────  ✦  ───────",
-                color = Accent,
-                fontSize = 16.sp
-            )
+            Text("───────  ✦  ───────", color = Accent, fontSize = 16.sp)
         }
-
         Spacer(Modifier.weight(1f))
-
-        Text(
-            text = "Darts Checkout v1.0",
-            color = TileBg,
-            fontSize = 13.sp,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
-fun BigButton(label: String, modifier: Modifier, onClick: () -> Unit) {
-    Box(
-        modifier = modifier.clip(RoundedCornerShape(24.dp)).background(TileBg).clickable { onClick() },
-        contentAlignment = Alignment.Center
-    ) {
-        Text(label, fontSize = 34.sp, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center)
+        Text("Darts Checkout v1.0", color = TileBg, fontSize = 13.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
     }
 }
 
@@ -449,23 +770,5 @@ fun SmallButton(label: String, modifier: Modifier, onClick: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Text(label, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Accent, textAlign = TextAlign.Center)
-    }
-}
-
-@Composable
-fun PlaceholderScreen(title: String, onBack: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(title, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.White, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(24.dp))
-        Text("Экран в разработке", fontSize = 16.sp, color = Accent)
-        Spacer(Modifier.height(48.dp))
-        Box(
-            modifier = Modifier.clip(RoundedCornerShape(16.dp)).background(TileBg)
-                .clickable { onBack() }.padding(horizontal = 32.dp, vertical = 14.dp)
-        ) { Text("← Назад", color = Color.White, fontSize = 16.sp) }
     }
 }
