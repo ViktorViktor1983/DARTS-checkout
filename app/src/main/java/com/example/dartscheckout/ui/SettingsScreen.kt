@@ -3,7 +3,9 @@ package com.example.dartscheckout.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,12 +17,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dartscheckout.theme.Accent
+import com.example.dartscheckout.theme.ErrorColor
 import com.example.dartscheckout.theme.GoldAccent
 import com.example.dartscheckout.theme.TileBg
 import com.example.dartscheckout.theme.TileBgDark
 
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    onExport: () -> Unit,
+    onImport: () -> Unit,
+    onReset: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -30,9 +38,11 @@ fun SettingsScreen(onBack: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Text("Настройки и инструкция", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
-        Spacer(Modifier.weight(1f))
+
+        Spacer(Modifier.height(16.dp))
+
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("───────  ✦  ───────", color = Accent, fontSize = 16.sp)
@@ -43,8 +53,62 @@ fun SettingsScreen(onBack: () -> Unit) {
             Text("Евгеньевич", color = GoldAccent, fontSize = 30.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
             Spacer(Modifier.height(20.dp))
             Text("───────  ✦  ───────", color = Accent, fontSize = 16.sp)
+
+            Spacer(Modifier.height(40.dp))
+
+            Text("ДОПОЛНИТЕЛЬНО", color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium, letterSpacing = 3.sp)
+            Spacer(Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                ActionButton(
+                    label = "Экспорт",
+                    modifier = Modifier.weight(1f),
+                    onClick = onExport
+                )
+                ActionButton(
+                    label = "Импорт",
+                    modifier = Modifier.weight(1f),
+                    onClick = onImport
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+            ActionButton(
+                label = "Сброс к заводским",
+                modifier = Modifier.fillMaxWidth(),
+                color = ErrorColor,
+                onClick = onReset
+            )
+            Spacer(Modifier.height(40.dp))
         }
-        Spacer(Modifier.weight(1f))
-        Text("Darts Checkout v1.0", color = TileBg, fontSize = 13.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+
+        Text(
+            "Darts Checkout v1.0",
+            color = TileBg,
+            fontSize = 13.sp,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun ActionButton(
+    label: String,
+    modifier: Modifier,
+    color: Color = TileBg,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(color)
+            .clickable { onClick() }
+            .padding(vertical = 14.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(label, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Medium)
     }
 }
