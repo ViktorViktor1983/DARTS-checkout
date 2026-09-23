@@ -12,9 +12,17 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +46,7 @@ val BackupVariantColor = Color(0xFFB39DDB)
 val MissVariantColor = Color(0xFFFFAB91)
 val ImpossibleBg = Color(0xFF5C2B3A)
 val ImpossibleText = Color(0xFFEF9A9A)
+val ErrorColor = Color(0xFFEF5350)
 
 val IMPOSSIBLE_NUMBERS = setOf(159, 162, 163, 165, 166, 168, 169)
 
@@ -50,11 +59,35 @@ data class Dart(val sector: Int, val multiplier: Int) {
         multiplier == 2 -> "D$sector"
         else -> "T$sector"
     }
+    companion object {
+        val ALL: List<Dart> = buildList {
+            for (s in 1..20) for (m in 1..3) add(Dart(s, m))
+            add(Dart(25, 1))
+            add(Dart(25, 2))
+        }
+    }
 }
 
 data class CheckoutVariant(val label: String, val throws: List<String>)
 
-val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
+fun parseDart(s: String): Dart? {
+    if (s == "BULL") return Dart(25, 2)
+    if (s == "25") return Dart(25, 1)
+    if (s.isEmpty()) return null
+    val mult = when (s[0]) {
+        'S' -> 1
+        'D' -> 2
+        'T' -> 3
+        else -> return null
+    }
+    val num = s.substring(1).toIntOrNull() ?: return null
+    return Dart(num, mult)
+}
+
+fun sumOfDarts(throws: List<String>): Int =
+    throws.mapNotNull(::parseDart).sumOf { it.score }
+
+val DEFAULT_CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
     60 to listOf(CheckoutVariant("Основной", listOf("S20", "D20"))),
     61 to listOf(
         CheckoutVariant("Основной", listOf("T15", "D8")),
@@ -393,8 +426,7 @@ val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
     124 to listOf(
         CheckoutVariant("Основной", listOf("T20", "T16", "D8")),
         CheckoutVariant("Промах T20", listOf("S20", "T18", "BULL")),
-        CheckoutVariant("Альтернативный", listOf("T20", "T20", "D2")),
-        CheckoutVariant("Промах T20", listOf("S20", "T18", "BULL"))
+        CheckoutVariant("Альтернативный", listOf("T20", "T20", "D2"))
     ),
     125 to listOf(
         CheckoutVariant("Основной", listOf("T20", "T19", "D4")),
@@ -419,8 +451,7 @@ val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
     129 to listOf(
         CheckoutVariant("Основной", listOf("T19", "T16", "D12")),
         CheckoutVariant("Промах T19", listOf("S19", "T20", "BULL")),
-        CheckoutVariant("Альтернативный", listOf("T19", "T20", "D6")),
-        CheckoutVariant("Промах T19", listOf("S19", "T20", "BULL"))
+        CheckoutVariant("Альтернативный", listOf("T19", "T20", "D6"))
     ),
     130 to listOf(
         CheckoutVariant("Основной", listOf("T20", "T20", "D5")),
@@ -502,6 +533,8 @@ fun DartsApp() {
     var screen by remember { mutableStateOf("main") }
     var selectedRange by remember { mutableStateOf(60..99) }
     var selectedNumber by remember { mutableStateOf<Int?>(null) }
+    var checkouts by remember { mutableStateOf(DEFAULT_CHECKOUTS) }
+    var editIndex by remember { mutableStateOf(-1) }
 
     when {
         screen == "main" -> MainMenuScreen(
@@ -514,10 +547,76 @@ fun DartsApp() {
             onNumberClick = { n -> selectedNumber = n; screen = "number" },
             onBack = { screen = "main" }
         )
-        screen == "number" -> NumberScreen(
-            number = selectedNumber ?: 0,
-            onBack = { screen = "range" }
-        )
+        screen == "number" -> {
+            val num = selectedNumber
+            if (num != null) {
+                NumberScreen(
+                    number = num,
+                    variants = checkouts[num].orEmpty(),
+                    onEditVariant = { idx -> editIndex = idx; screen = "edit" },
+                    onAddVariant = { editIndex = -1; screen = "edit" },
+                    onDelete = { idx ->
+                        val list = (checkouts[num] ?: emptyList()).toMutableList()
+                        if (idx in list.indices) {
+                            list.removeAt(idx)
+                            checkouts = checkouts + (num to list)
+                        }
+                    },
+                    onMakeMain = { idx ->
+                        val list = (checkouts[num] ?: emptyList()).toMutableList()
+                        if (idx in list.indices) {
+                            for (i in list.indices) {
+                                if (list[i].label.startsWith("Основной")) {
+                                    list[i] = list[i].copy(label = "Альтернативный")
+                                }
+                            }
+                            list[idx] = list[idx].copy(label = "Основной")
+                            checkouts = checkouts + (num to list)
+                        }
+                    },
+                    onMoveUp = { idx ->
+                        val list = (checkouts[num] ?: emptyList()).toMutableList()
+                        if (idx > 0 && idx < list.size) {
+                            val tmp = list[idx]
+                            list[idx] = list[idx - 1]
+                            list[idx - 1] = tmp
+                            checkouts = checkouts + (num to list)
+                        }
+                    },
+                    onMoveDown = { idx ->
+                        val list = (checkouts[num] ?: emptyList()).toMutableList()
+                        if (idx >= 0 && idx < list.size - 1) {
+                            val tmp = list[idx]
+                            list[idx] = list[idx + 1]
+                            list[idx + 1] = tmp
+                            checkouts = checkouts + (num to list)
+                        }
+                    },
+                    onBack = { screen = "range" }
+                )
+            }
+        }
+        screen == "edit" -> {
+            val num = selectedNumber
+            if (num != null) {
+                val initial = if (editIndex >= 0) checkouts[num]?.getOrNull(editIndex) else null
+                EditVariantScreen(
+                    number = num,
+                    initial = initial,
+                    onSave = { newVariant ->
+                        val list = (checkouts[num] ?: emptyList()).toMutableList()
+                        if (editIndex == -1) {
+                            list.add(newVariant)
+                        } else if (editIndex in list.indices) {
+                            list[editIndex] = newVariant
+                        }
+                        checkouts = checkouts + (num to list)
+                        screen = "number"
+                    },
+                    onCancel = { screen = "number" }
+                )
+            }
+        }
         screen == "settings" -> SettingsScreen(onBack = { screen = "main" })
         screen == "calc" -> CalculatorScreen(onBack = { screen = "main" })
     }
@@ -616,8 +715,17 @@ fun NumberTile(number: Int, onClick: () -> Unit) {
 }
 
 @Composable
-fun NumberScreen(number: Int, onBack: () -> Unit) {
-    val variants = CHECKOUTS[number].orEmpty()
+fun NumberScreen(
+    number: Int,
+    variants: List<CheckoutVariant>,
+    onEditVariant: (Int) -> Unit,
+    onAddVariant: () -> Unit,
+    onDelete: (Int) -> Unit,
+    onMakeMain: (Int) -> Unit,
+    onMoveUp: (Int) -> Unit,
+    onMoveDown: (Int) -> Unit,
+    onBack: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -628,27 +736,64 @@ fun NumberScreen(number: Int, onBack: () -> Unit) {
             Text("Закрытие $number", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
         Spacer(Modifier.height(16.dp))
-        if (variants.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Вариантов нет", color = ImpossibleText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(12.dp))
-                    Text("Число $number невозможно закрыть за 3 дротика", color = Accent, fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp))
+        Column(
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (variants.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Вариантов пока нет",
+                        color = Accent,
+                        fontSize = 16.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                variants.forEachIndexed { idx, v ->
+                    CheckoutCardWithMenu(
+                        variant = v,
+                        onEdit = { onEditVariant(idx) },
+                        onDelete = { onDelete(idx) },
+                        onMakeMain = { onMakeMain(idx) },
+                        onMoveUp = { onMoveUp(idx) },
+                        onMoveDown = { onMoveDown(idx) }
+                    )
                 }
             }
-        } else {
-            Column(
-                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+
+            Spacer(Modifier.height(4.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(TileBg)
+                    .clickable { onAddVariant() }
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                variants.forEach { v -> CheckoutCard(v) }
+                Text("+  Добавить вариант", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
+
+            Spacer(Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-fun CheckoutCard(variant: CheckoutVariant) {
+fun CheckoutCardWithMenu(
+    variant: CheckoutVariant,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onMakeMain: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit
+) {
+    var menuOpen by remember { mutableStateOf(false) }
     val color = when {
         variant.label.startsWith("Основной") -> MainVariantColor
         variant.label.startsWith("Альтернативный") -> AltVariantColor
@@ -660,26 +805,236 @@ fun CheckoutCard(variant: CheckoutVariant) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .background(TileBgDark)
-            .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = variant.label.uppercase(),
-                color = Accent,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 2.sp
-            )
-            Spacer(Modifier.height(10.dp))
-            Text(
-                text = variant.throws.joinToString("   "),
-                color = color,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                modifier = Modifier.weight(1f).padding(horizontal = 12.dp, vertical = 18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = variant.label.uppercase(),
+                    color = Accent,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 2.sp
+                )
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = variant.throws.joinToString("   "),
+                    color = color,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(22.dp))
+                    .clickable { menuOpen = true },
+                contentAlignment = Alignment.Center
+            ) {
+                Text("⋮", color = Accent, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+        DropdownMenu(
+            expanded = menuOpen,
+            onDismissRequest = { menuOpen = false }
+        ) {
+            DropdownMenuItem(text = { Text("Редактировать") }, onClick = { menuOpen = false; onEdit() })
+            DropdownMenuItem(text = { Text("Сделать основным") }, onClick = { menuOpen = false; onMakeMain() })
+            DropdownMenuItem(text = { Text("Вверх") }, onClick = { menuOpen = false; onMoveUp() })
+            DropdownMenuItem(text = { Text("Вниз") }, onClick = { menuOpen = false; onMoveDown() })
+            DropdownMenuItem(text = { Text("Удалить", color = ErrorColor) }, onClick = { menuOpen = false; onDelete() })
         }
     }
+}
+
+@Composable
+fun EditVariantScreen(
+    number: Int,
+    initial: CheckoutVariant?,
+    onSave: (CheckoutVariant) -> Unit,
+    onCancel: () -> Unit
+) {
+    var label by remember { mutableStateOf(initial?.label ?: "") }
+    val initialSlots = remember {
+        val base = initial?.throws ?: emptyList()
+        val list = base.toMutableList()
+        while (list.size < 3) list.add("")
+        list.take(3)
+    }
+    var slots by remember { mutableStateOf(initialSlots) }
+    var pickerSlot by remember { mutableStateOf(-1) }
+
+    val filled = slots.filter { it.isNotEmpty() }
+    val sum = sumOfDarts(filled)
+    val valid = filled.isNotEmpty() && sum == number
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.clip(RoundedCornerShape(12.dp)).background(TileBgDark)
+                    .clickable { onCancel() }.padding(horizontal = 16.dp, vertical = 10.dp)
+            ) { Text("← Назад", color = Accent, fontSize = 15.sp) }
+            Spacer(Modifier.width(12.dp))
+            Text(
+                if (initial == null) "Новый вариант — $number" else "Правка — $number",
+                fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Text("Название варианта", color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(6.dp))
+        OutlinedTextField(
+            value = label,
+            onValueChange = { label = it },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            placeholder = { Text("Например: Основной / Промах T17", color = TileBg) },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                focusedBorderColor = Accent,
+                unfocusedBorderColor = TileBg,
+                cursorColor = Accent
+            )
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        Text("Дротики (до 3):", color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.height(8.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (i in 0..2) {
+                SlotEdit(
+                    value = slots[i],
+                    modifier = Modifier.weight(1f).aspectRatio(1f),
+                    onClick = { pickerSlot = i }
+                )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            "Сумма: $sum / $number",
+            color = if (sum == number) Accent else ErrorColor,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+
+        if (filled.isNotEmpty() && sum != number) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Сумма дротиков должна быть ровно $number",
+                color = ErrorColor,
+                fontSize = 13.sp
+            )
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedButton(
+                onClick = onCancel,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Отмена", color = Accent)
+            }
+            Button(
+                onClick = {
+                    val finalLabel = label.ifBlank {
+                        if (initial == null) "Без названия" else initial.label
+                    }
+                    onSave(CheckoutVariant(finalLabel, filled))
+                },
+                enabled = valid,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Сохранить")
+            }
+        }
+    }
+
+    if (pickerSlot >= 0) {
+        DartPickerDialog(
+            onPick = { dart ->
+                val newSlots = slots.toMutableList()
+                newSlots[pickerSlot] = dart.toString()
+                slots = newSlots
+                pickerSlot = -1
+            },
+            onClear = {
+                val newSlots = slots.toMutableList()
+                newSlots[pickerSlot] = ""
+                slots = newSlots
+                pickerSlot = -1
+            },
+            onDismiss = { pickerSlot = -1 }
+        )
+    }
+}
+
+@Composable
+fun SlotEdit(value: String, modifier: Modifier, onClick: () -> Unit) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (value.isEmpty()) TileBgDark else TileBg)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = value.ifEmpty { "—" },
+            color = if (value.isEmpty()) TileBg else Color.White,
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+fun DartPickerDialog(
+    onPick: (Dart) -> Unit,
+    onClear: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onClear) { Text("Очистить", color = ErrorColor) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Отмена", color = Accent) }
+        },
+        title = { Text("Выберите дротик", color = Color.White) },
+        text = {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.height(360.dp)
+            ) {
+                items(Dart.ALL) { dart ->
+                    Box(
+                        modifier = Modifier
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(TileBg)
+                            .clickable { onPick(dart) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(dart.toString(), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        }
+    )
 }
 
 @Composable
