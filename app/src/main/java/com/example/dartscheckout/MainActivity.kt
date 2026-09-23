@@ -35,6 +35,10 @@ val GoldAccent = Color(0xFFFFD54F)
 val MainVariantColor = Color(0xFF4FC3F7)
 val AltVariantColor = Color(0xFFFFFFFF)
 val BackupVariantColor = Color(0xFFB39DDB)
+val ImpossibleBg = Color(0xFF5C2B3A)
+val ImpossibleText = Color(0xFFEF9A9A)
+
+val IMPOSSIBLE_NUMBERS = setOf(159, 162, 163, 165, 166, 168, 169)
 
 data class Dart(val sector: Int, val multiplier: Int) {
     val score: Int get() = sector * multiplier
@@ -49,7 +53,6 @@ data class Dart(val sector: Int, val multiplier: Int) {
 
 data class CheckoutVariant(val label: String, val throws: List<String>)
 
-// Таблица стандартных чекаутов для 60-170
 val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
     60 to listOf(CheckoutVariant("Основной", listOf("S20", "D20"))),
     61 to listOf(
@@ -142,9 +145,7 @@ val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
         CheckoutVariant("Основной", listOf("T14", "D20")),
         CheckoutVariant("Альтернативный", listOf("BULL", "D16"))
     ),
-    83 to listOf(
-        CheckoutVariant("Основной", listOf("T17", "D16"))
-    ),
+    83 to listOf(CheckoutVariant("Основной", listOf("T17", "D16"))),
     84 to listOf(
         CheckoutVariant("Основной", listOf("T20", "D12")),
         CheckoutVariant("Альтернативный", listOf("T16", "D18"))
@@ -153,12 +154,8 @@ val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
         CheckoutVariant("Основной", listOf("T15", "D20")),
         CheckoutVariant("Альтернативный", listOf("T19", "D14"))
     ),
-    86 to listOf(
-        CheckoutVariant("Основной", listOf("T18", "D16"))
-    ),
-    87 to listOf(
-        CheckoutVariant("Основной", listOf("T17", "D18"))
-    ),
+    86 to listOf(CheckoutVariant("Основной", listOf("T18", "D16"))),
+    87 to listOf(CheckoutVariant("Основной", listOf("T17", "D18"))),
     88 to listOf(
         CheckoutVariant("Основной", listOf("T16", "D20")),
         CheckoutVariant("Альтернативный", listOf("T20", "D14"))
@@ -175,34 +172,18 @@ val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
         CheckoutVariant("Основной", listOf("T17", "D20")),
         CheckoutVariant("Альтернативный", listOf("T19", "D17"))
     ),
-    92 to listOf(
-        CheckoutVariant("Основной", listOf("T20", "D16"))
-    ),
-    93 to listOf(
-        CheckoutVariant("Основной", listOf("T19", "D18"))
-    ),
-    94 to listOf(
-        CheckoutVariant("Основной", listOf("T18", "D20"))
-    ),
-    95 to listOf(
-        CheckoutVariant("Основной", listOf("T19", "D19"))
-    ),
-    96 to listOf(
-        CheckoutVariant("Основной", listOf("T20", "D18"))
-    ),
-    97 to listOf(
-        CheckoutVariant("Основной", listOf("T19", "D20"))
-    ),
-    98 to listOf(
-        CheckoutVariant("Основной", listOf("T20", "D19"))
-    ),
+    92 to listOf(CheckoutVariant("Основной", listOf("T20", "D16"))),
+    93 to listOf(CheckoutVariant("Основной", listOf("T19", "D18"))),
+    94 to listOf(CheckoutVariant("Основной", listOf("T18", "D20"))),
+    95 to listOf(CheckoutVariant("Основной", listOf("T19", "D19"))),
+    96 to listOf(CheckoutVariant("Основной", listOf("T20", "D18"))),
+    97 to listOf(CheckoutVariant("Основной", listOf("T19", "D20"))),
+    98 to listOf(CheckoutVariant("Основной", listOf("T20", "D19"))),
     99 to listOf(
         CheckoutVariant("Основной", listOf("T19", "S10", "D16")),
         CheckoutVariant("Альтернативный", listOf("T20", "S7", "D16"))
     ),
-    100 to listOf(
-        CheckoutVariant("Основной", listOf("T20", "D20"))
-    ),
+    100 to listOf(CheckoutVariant("Основной", listOf("T20", "D20"))),
     101 to listOf(
         CheckoutVariant("Основной", listOf("T17", "BULL")),
         CheckoutVariant("Альтернативный", listOf("T20", "S9", "D16"))
@@ -348,14 +329,10 @@ val CHECKOUTS: Map<Int, List<CheckoutVariant>> = mapOf(
         CheckoutVariant("Альтернативный", listOf("T19", "T20", "D20"))
     ),
     158 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D19"))),
-    // 159 — невозможный за 3 дротика
     160 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "D20"))),
     161 to listOf(CheckoutVariant("Основной", listOf("T20", "T17", "BULL"))),
-    // 162, 163 — невозможные
     164 to listOf(CheckoutVariant("Основной", listOf("T20", "T18", "BULL"))),
-    // 165, 166 — невозможные
     167 to listOf(CheckoutVariant("Основной", listOf("T20", "T19", "BULL"))),
-    // 168, 169 — невозможные
     170 to listOf(CheckoutVariant("Основной", listOf("T20", "T20", "BULL")))
 )
 
@@ -415,7 +392,7 @@ fun MainMenuScreen(
             "Darts Checkout",
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
-            color = Accent,
+            color = GoldAccent,
             letterSpacing = 3.sp,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
@@ -478,12 +455,26 @@ fun RangeScreen(range: IntRange, onNumberClick: (Int) -> Unit, onBack: () -> Uni
 
 @Composable
 fun NumberTile(number: Int, onClick: () -> Unit) {
+    val impossible = number in IMPOSSIBLE_NUMBERS
+    val bg = if (impossible) ImpossibleBg else TileBg
+    val fg = if (impossible) ImpossibleText else Color.White
+
     Box(
-        modifier = Modifier.aspectRatio(1f).clip(RoundedCornerShape(14.dp))
-            .background(TileBg).clickable { onClick() },
+        modifier = Modifier
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(14.dp))
+            .background(bg)
+            .then(
+                if (impossible) Modifier else Modifier.clickable { onClick() }
+            ),
         contentAlignment = Alignment.Center
     ) {
-        Text(number.toString(), fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+        Text(
+            text = number.toString(),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = fg
+        )
     }
 }
 
@@ -509,7 +500,7 @@ fun NumberScreen(number: Int, onBack: () -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Вариантов нет", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("Вариантов нет", color = ImpossibleText, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(12.dp))
                     Text(
                         "Число $number невозможно закрыть за 3 дротика",
@@ -525,9 +516,7 @@ fun NumberScreen(number: Int, onBack: () -> Unit) {
                 modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                variants.forEach { v ->
-                    CheckoutCard(v)
-                }
+                variants.forEach { v -> CheckoutCard(v) }
             }
         }
     }
