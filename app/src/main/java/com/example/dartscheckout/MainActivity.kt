@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import com.example.dartscheckout.data.CheckoutVariant
 import com.example.dartscheckout.data.checkoutsToJson
 import com.example.dartscheckout.data.db.AppDatabase
@@ -63,7 +65,6 @@ fun DartsApp(repository: CheckoutRepository) {
         loaded = true
     }
 
-    // Экспорт в файл
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri: Uri? ->
@@ -80,7 +81,6 @@ fun DartsApp(repository: CheckoutRepository) {
         }
     }
 
-    // Импорт из файла
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
@@ -224,7 +224,6 @@ fun DartsApp(repository: CheckoutRepository) {
             screen == "calc" -> CalculatorScreen(onBack = { screen = "main" })
         }
 
-        // Всплывающее сообщение
         toastMessage?.let { msg ->
             LaunchedEffect(msg) {
                 kotlinx.coroutines.delay(2000)
