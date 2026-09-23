@@ -130,7 +130,7 @@ fun RangeButton(start: Int, end: Int, modifier: Modifier, onClick: () -> Unit) {
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
                 text = start.toString(),
@@ -140,7 +140,7 @@ fun RangeButton(start: Int, end: Int, modifier: Modifier, onClick: () -> Unit) {
             )
             Text(
                 text = "↓",
-                fontSize = 40.sp,
+                fontSize = 64.sp,
                 fontWeight = FontWeight.Bold,
                 color = Accent
             )
