@@ -96,8 +96,14 @@ fun MainMenuScreen(
     ) {
         Text(
             "Darts Checkout",
-            fontSize = 28.sp, fontWeight = FontWeight.Bold,
-            color = Color.White, modifier = Modifier.padding(bottom = 4.dp)
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            letterSpacing = 3.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
         )
         Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             RangeButton(60, 99, Modifier.weight(1f).fillMaxHeight()) { onRangeClick(60..99) }
@@ -124,23 +130,23 @@ fun RangeButton(start: Int, end: Int, modifier: Modifier, onClick: () -> Unit) {
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Text(
                 text = start.toString(),
-                fontSize = 40.sp,
+                fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
             Text(
                 text = "↓",
-                fontSize = 28.sp,
+                fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
                 color = Accent
             )
             Text(
                 text = end.toString(),
-                fontSize = 40.sp,
+                fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
