@@ -25,6 +25,8 @@ import com.example.dartscheckout.theme.TileBgDark
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    sortDescending: Boolean,
+    onSortDescendingChange: (Boolean) -> Unit,
     onExport: () -> Unit,
     onImport: () -> Unit,
     onReset: () -> Unit
@@ -54,8 +56,32 @@ fun SettingsScreen(
             Spacer(Modifier.height(20.dp))
             Text("───────  ✦  ───────", color = Accent, fontSize = 16.sp)
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(36.dp))
 
+            // Порядок чисел
+            Text("ПОРЯДОК ЧИСЕЛ", color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium, letterSpacing = 3.sp)
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SortButton(
+                    label = "По возрастанию",
+                    selected = !sortDescending,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onSortDescendingChange(false) }
+                )
+                SortButton(
+                    label = "По убыванию",
+                    selected = sortDescending,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onSortDescendingChange(true) }
+                )
+            }
+
+            Spacer(Modifier.height(36.dp))
+
+            // Дополнительно
             Text("ДОПОЛНИТЕЛЬНО", color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium, letterSpacing = 3.sp)
             Spacer(Modifier.height(12.dp))
 
@@ -89,6 +115,33 @@ fun SettingsScreen(
             color = TileBg,
             fontSize = 13.sp,
             modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun SortButton(
+    label: String,
+    selected: Boolean,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    val bg = if (selected) Accent else TileBg
+    val fg = if (selected) Color(0xFF121212) else Color.White
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(bg)
+            .clickable { onClick() }
+            .padding(vertical = 14.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            label,
+            color = fg,
+            fontSize = 14.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             textAlign = TextAlign.Center
         )
     }
