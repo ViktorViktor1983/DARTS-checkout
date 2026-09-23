@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dartscheckout.data.CheckoutVariant
 import com.example.dartscheckout.data.Dart
+import com.example.dartscheckout.data.parseDart
 import com.example.dartscheckout.data.sumOfDarts
 import com.example.dartscheckout.theme.Accent
 import com.example.dartscheckout.theme.ErrorColor
@@ -49,7 +50,15 @@ fun EditVariantScreen(
 
     val filled = slots.filter { it.isNotEmpty() }
     val sum = sumOfDarts(filled)
-    val valid = filled.isNotEmpty() && sum == number
+
+    // Проверка: сумма совпадает с числом
+    val sumOk = filled.isNotEmpty() && sum == number
+
+    // Проверка: последний дротик — удвоение или BULL
+    val lastDart = filled.lastOrNull()?.let { parseDart(it) }
+    val lastOk = lastDart != null && lastDart.multiplier == 2
+
+    val valid = sumOk && lastOk
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -102,15 +111,24 @@ fun EditVariantScreen(
 
         Text(
             "Сумма: $sum / $number",
-            color = if (sum == number) Accent else ErrorColor,
+            color = if (sumOk) Accent else ErrorColor,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
         )
 
-        if (filled.isNotEmpty() && sum != number) {
+        if (filled.isNotEmpty() && !sumOk) {
             Spacer(Modifier.height(4.dp))
             Text(
                 "Сумма дротиков должна быть ровно $number",
+                color = ErrorColor,
+                fontSize = 13.sp
+            )
+        }
+
+        if (filled.isNotEmpty() && !lastOk) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Последний дротик должен быть удвоением (D...) или BULL",
                 color = ErrorColor,
                 fontSize = 13.sp
             )
