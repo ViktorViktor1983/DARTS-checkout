@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.dartscheckout.data.CheckoutVariant
+import com.example.dartscheckout.data.SettingsStorage
 import com.example.dartscheckout.data.checkoutsToJson
 import com.example.dartscheckout.data.db.AppDatabase
 import com.example.dartscheckout.data.db.CheckoutRepository
@@ -57,6 +58,8 @@ fun DartsApp(repository: CheckoutRepository) {
     var selectedRange by remember { mutableStateOf(60..99) }
     var selectedNumber by remember { mutableStateOf<Int?>(null) }
     var editIndex by remember { mutableStateOf(-1) }
+
+    var sortDescending by remember { mutableStateOf(SettingsStorage.isSortDescending(context)) }
 
     LaunchedEffect(Unit) {
         repository.seedIfEmpty()
@@ -129,6 +132,7 @@ fun DartsApp(repository: CheckoutRepository) {
             )
             screen == "range" -> RangeScreen(
                 range = selectedRange,
+                descending = sortDescending,
                 onNumberClick = { n -> selectedNumber = n; screen = "number" },
                 onBack = { screen = "main" }
             )
@@ -205,6 +209,11 @@ fun DartsApp(repository: CheckoutRepository) {
             }
             screen == "settings" -> SettingsScreen(
                 onBack = { screen = "main" },
+                sortDescending = sortDescending,
+                onSortDescendingChange = { value ->
+                    sortDescending = value
+                    SettingsStorage.setSortDescending(context, value)
+                },
                 onExport = {
                     exportLauncher.launch("darts-checkout-backup.json")
                 },
