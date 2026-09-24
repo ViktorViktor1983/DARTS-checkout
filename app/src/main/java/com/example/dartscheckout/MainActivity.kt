@@ -6,9 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -16,9 +19,14 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.dartscheckout.data.CheckoutVariant
 import com.example.dartscheckout.data.SettingsStorage
 import com.example.dartscheckout.data.checkoutsToJson
@@ -27,7 +35,10 @@ import com.example.dartscheckout.data.db.CheckoutRepository
 import com.example.dartscheckout.data.jsonToCheckouts
 import com.example.dartscheckout.data.readTextFromUri
 import com.example.dartscheckout.data.writeTextToUri
+import com.example.dartscheckout.theme.Accent
 import com.example.dartscheckout.theme.DarkBg
+import com.example.dartscheckout.theme.TileBg
+import com.example.dartscheckout.theme.TileBgDark
 import com.example.dartscheckout.ui.*
 import kotlinx.coroutines.launch
 
@@ -60,6 +71,7 @@ fun DartsApp(repository: CheckoutRepository) {
     var editIndex by remember { mutableStateOf(-1) }
 
     var sortDescending by remember { mutableStateOf(SettingsStorage.isSortDescending(context)) }
+    var showWelcome by remember { mutableStateOf(!SettingsStorage.isWelcomeShown(context)) }
 
     LaunchedEffect(Unit) {
         repository.seedIfEmpty()
@@ -128,6 +140,7 @@ fun DartsApp(repository: CheckoutRepository) {
             screen == "main" -> MainMenuScreen(
                 onRangeClick = { range -> selectedRange = range; screen = "range" },
                 onSettings = { screen = "settings" },
+                onHelp = { screen = "help" },
                 onCalculator = { screen = "calc" }
             )
             screen == "range" -> RangeScreen(
@@ -230,7 +243,15 @@ fun DartsApp(repository: CheckoutRepository) {
                     }
                 }
             )
+            screen == "help" -> HelpScreen(onBack = { screen = "main" })
             screen == "calc" -> CalculatorScreen(onBack = { screen = "main" })
+        }
+
+        if (showWelcome) {
+            WelcomeDialog(onClose = {
+                SettingsStorage.setWelcomeShown(context)
+                showWelcome = false
+            })
         }
 
         toastMessage?.let { msg ->
@@ -244,7 +265,7 @@ fun DartsApp(repository: CheckoutRepository) {
             ) {
                 Surface(
                     color = Color(0xFF37474F),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         msg,
@@ -254,5 +275,124 @@ fun DartsApp(repository: CheckoutRepository) {
                 }
             }
         }
+    }
+}
+
+@Composable
+fun WelcomeDialog(onClose: () -> Unit) {
+    Dialog(onDismissRequest = { }) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(TileBgDark)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(TileBg)
+                            .clickable { onClose() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("✕", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Text(
+                    "Darts Checkout",
+                    color = Accent,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    "Здравствуйте!",
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 380.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    WelcomeText()
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Accent)
+                        .clickable { onClose() }
+                        .padding(vertical = 14.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Понятно",
+                        color = Color(0xFF121212),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WelcomeText() {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            "Это сообщение вы видите в первый и последний раз — больше оно не появится. Пожалуйста, прочитайте его до конца.",
+            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+        )
+        Text(
+            "Это полностью бесплатное приложение — без подписок и рекламы.",
+            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+        )
+        Text(
+            "Что внутри:",
+            color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Bold
+        )
+        Text(
+            "• Основные способы закрытия чекаутов 60–170\n" +
+            "• Альтернативные пути и варианты при промахе\n" +
+            "• Возможность добавлять, редактировать, удалять и переставлять свои закрытия\n" +
+            "• Дартс-калькулятор для подсчёта очков",
+            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+        )
+        Text(
+            "В разделе «Помощь» — инструкция по использованию, связь с разработчиком и реквизиты для тех, кто хочет отблагодарить. Даже ваша помощь 10 руб. очень помогут в наших будущих проектах.",
+            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+        )
+        Text(
+            "Спасибо, что вы с нами!",
+            color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Bold
+        )
     }
 }
