@@ -31,27 +31,48 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Verify keystore exists
+      - name: Verify debug keystore
         run: |
           if [ ! -f keystore/debug.keystore ]; then
-            echo "ERROR: keystore/debug.keystore not found in repository!"
+            echo "ERROR: keystore/debug.keystore not found!"
             exit 1
           fi
-          echo "Keystore found. Checking signature:"
-          keytool -list -v -keystore keystore/debug.keystore \
-            -storepass android -alias androiddebugkey | grep -i "SHA1" || true
+          echo "Debug keystore OK."
+
+      - name: Create release keystore if missing
+        run: |
+          if [ -f keystore/release.keystore ]; then
+            echo "Release keystore already exists."
+          else
+            keytool -genkeypair -v \
+              -keystore keystore/release.keystore \
+              -alias releasekey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass android -keypass android \
+              -dname "CN=Darts Checkout,O=Lodkin,C=RU" \
+              -storetype JKS
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add keystore/release.keystore
+            git commit -m "Add release keystore [skip ci]"
+            git push
+            echo "Release keystore created and saved to repository."
+          fi
 
       - name: Build debug APK
         run: gradle assembleDebug
 
-      - name: Show APK signature
-        run: |
-          APK=app/build/outputs/apk/debug/app-debug.apk
-          echo "Signing info of $APK:"
-          keytool -printcert -jarfile $APK 2>/dev/null | grep -i "SHA1" || true
+      - name: Build release APK
+        run: gradle assembleRelease
 
-      - name: Upload APK
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app/build/outputs/apk/release/app-release.apk
