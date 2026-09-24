@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dartscheckout.theme.Accent
 import com.example.dartscheckout.theme.ErrorColor
-import com.example.dartscheckout.theme.GoldAccent
 import com.example.dartscheckout.theme.TileBg
 import com.example.dartscheckout.theme.TileBgDark
 
@@ -38,26 +37,14 @@ fun SettingsScreen(
                     .clickable { onBack() }.padding(horizontal = 16.dp, vertical = 10.dp)
             ) { Text("← Назад", color = Accent, fontSize = 15.sp) }
             Spacer(Modifier.width(12.dp))
-            Text("Настройки и инструкция", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("Настройки", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(24.dp))
 
         Column(
-            modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())
         ) {
-            Text("───────  ✦  ───────", color = Accent, fontSize = 16.sp)
-            Spacer(Modifier.height(20.dp))
-            Text("РАЗРАБОТЧИК", color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Medium, letterSpacing = 4.sp)
-            Spacer(Modifier.height(12.dp))
-            Text("Лодкин Виктор", color = GoldAccent, fontSize = 30.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            Text("Евгеньевич", color = GoldAccent, fontSize = 30.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(20.dp))
-            Text("───────  ✦  ───────", color = Accent, fontSize = 16.sp)
-
-            Spacer(Modifier.height(36.dp))
-
             // Порядок чисел
             Text("ПОРЯДОК ЧИСЕЛ", color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium, letterSpacing = 3.sp)
             Spacer(Modifier.height(12.dp))
@@ -82,7 +69,7 @@ fun SettingsScreen(
             Spacer(Modifier.height(36.dp))
 
             // Дополнительно
-            Text("ДОПОЛНИТЕЛЬНО", color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium, letterSpacing = 3.sp)
+            Text("БАЗА ДАННЫХ", color = Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium, letterSpacing = 3.sp)
             Spacer(Modifier.height(12.dp))
 
             Row(
@@ -107,7 +94,7 @@ fun SettingsScreen(
                 color = ErrorColor,
                 onClick = onReset
             )
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(24.dp))
         }
 
         Text(
