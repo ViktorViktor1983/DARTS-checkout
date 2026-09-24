@@ -6,10 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -292,24 +294,6 @@ fun WelcomeDialog(onClose: () -> Unit) {
                     .fillMaxWidth()
                     .padding(24.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(18.dp))
-                            .background(TileBg)
-                            .clickable { onClose() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("✕", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-
                 Text(
                     "Darts Checkout",
                     color = Accent,
@@ -319,7 +303,7 @@ fun WelcomeDialog(onClose: () -> Unit) {
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(12.dp))
 
                 Text(
                     "Здравствуйте!",
@@ -332,32 +316,52 @@ fun WelcomeDialog(onClose: () -> Unit) {
 
                 Spacer(Modifier.height(16.dp))
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 380.dp)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    WelcomeText()
-                }
-
-                Spacer(Modifier.height(20.dp))
+                val scrollState = rememberScrollState()
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Accent)
-                        .clickable { onClose() }
-                        .padding(vertical = 14.dp),
-                    contentAlignment = Alignment.Center
+                        .heightIn(max = 430.dp)
                 ) {
-                    Text(
-                        "Понятно",
-                        color = Color(0xFF121212),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(scrollState)
+                            .padding(end = 16.dp)
+                    ) {
+                        WelcomeText()
+
+                        Spacer(Modifier.height(24.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Accent)
+                                .clickable { onClose() }
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "Понятно",
+                                color = Color(0xFF121212),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(Modifier.height(4.dp))
+                    }
+
+                    if (scrollState.maxValue > 0) {
+                        VerticalScrollbar(
+                            adapter = rememberScrollbarAdapter(scrollState),
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .fillMaxHeight()
+                                .width(6.dp)
+                        )
+                    }
                 }
             }
         }
