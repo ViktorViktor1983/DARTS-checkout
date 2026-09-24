@@ -13,25 +13,32 @@ android {
         applicationId = "com.lodkin.dartscheckout"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
+        versionCode = 6
         versionName = "1.0"
     }
 
     signingConfigs {
-        create("stable") {
+        create("stableDebug") {
             storeFile = rootProject.file("keystore/debug.keystore")
             storePassword = "android"
             keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+        create("releaseConfig") {
+            storeFile = rootProject.file("keystore/release.keystore")
+            storePassword = "android"
+            keyAlias = "releasekey"
             keyPassword = "android"
         }
     }
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("stable")
+            signingConfig = signingConfigs.getByName("stableDebug")
         }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("releaseConfig")
         }
     }
     compileOptions {
@@ -56,7 +63,6 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.5")
 
-    // Room
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
