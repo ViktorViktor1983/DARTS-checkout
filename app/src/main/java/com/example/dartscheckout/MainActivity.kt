@@ -6,12 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -317,21 +315,26 @@ fun WelcomeDialog(onClose: () -> Unit) {
                 Spacer(Modifier.height(16.dp))
 
                 val scrollState = rememberScrollState()
+                val atBottom by remember {
+                    derivedStateOf {
+                        scrollState.maxValue == 0 ||
+                        scrollState.value >= scrollState.maxValue - 10
+                    }
+                }
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 430.dp)
+                        .heightIn(max = 440.dp)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .verticalScroll(scrollState)
-                            .padding(end = 16.dp)
                     ) {
                         WelcomeText()
 
-                        Spacer(Modifier.height(24.dp))
+                        Spacer(Modifier.height(20.dp))
 
                         Box(
                             modifier = Modifier
@@ -353,14 +356,23 @@ fun WelcomeDialog(onClose: () -> Unit) {
                         Spacer(Modifier.height(4.dp))
                     }
 
-                    if (scrollState.maxValue > 0) {
-                        VerticalScrollbar(
-                            adapter = rememberScrollbarAdapter(scrollState),
+                    if (!atBottom) {
+                        Box(
                             modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .fillMaxHeight()
-                                .width(6.dp)
-                        )
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Accent.copy(alpha = 0.9f))
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "↓  Прокрутите вниз",
+                                color = Color(0xFF121212),
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
