@@ -16,6 +16,7 @@ import com.example.dartscheckout.ui.components.SmallButton
 fun MainMenuScreen(
     onRangeClick: (IntRange) -> Unit,
     onSettings: () -> Unit,
+    onHelp: () -> Unit,
     onCalculator: () -> Unit
 ) {
     Column(
@@ -37,9 +38,10 @@ fun MainMenuScreen(
         }
         Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             RangeButton(135, 170, Modifier.weight(1f).fillMaxHeight()) { onRangeClick(135..170) }
-            Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 SmallButton("Калькулятор", Modifier.fillMaxWidth().weight(1f), onCalculator)
-                SmallButton("Настройки\nи инструкция", Modifier.fillMaxWidth().weight(1f), onSettings)
+                SmallButton("Настройки", Modifier.fillMaxWidth().weight(1f), onSettings)
+                SmallButton("Помощь", Modifier.fillMaxWidth().weight(1f), onHelp)
             }
         }
     }
