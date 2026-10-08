@@ -70,17 +70,36 @@ fun RootWithSplash(
     repository: CheckoutRepository,
     progressRepository: CheckoutProgressRepository
 ) {
+    val context = LocalContext.current
     var showSplash by remember { mutableStateOf(true) }
+    var showWelcome by remember { mutableStateOf(false) }
     val alpha = remember { Animatable(1f) }
 
     LaunchedEffect(Unit) {
+        // 1) Заставка держится 3 секунды
         delay(3000)
+        // 2) Плавно растворяется за 1 секунду
         alpha.animateTo(0f, animationSpec = tween(1000))
+        // 3) Заставка убрана с экрана
         showSplash = false
+        // 4) Небольшая пауза, чтобы экран точно был «чистым»
+        delay(300)
+        // 5) Только теперь показываем приветствие (и только один раз за всё время)
+        if (!SettingsStorage.isWelcomeShown(context)) {
+            showWelcome = true
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        DartsApp(repository, progressRepository)
+        DartsApp(
+            repository = repository,
+            progressRepository = progressRepository,
+            showWelcome = showWelcome,
+            onWelcomeClose = {
+                SettingsStorage.setWelcomeShown(context)
+                showWelcome = false
+            }
+        )
 
         if (showSplash) {
             SplashContent(alpha = alpha.value)
@@ -109,7 +128,9 @@ fun SplashContent(alpha: Float) {
 @Composable
 fun DartsApp(
     repository: CheckoutRepository,
-    progressRepository: CheckoutProgressRepository
+    progressRepository: CheckoutProgressRepository,
+    showWelcome: Boolean,
+    onWelcomeClose: () -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -123,7 +144,6 @@ fun DartsApp(
     var editIndex by remember { mutableStateOf(-1) }
 
     var sortDescending by remember { mutableStateOf(SettingsStorage.isSortDescending(context)) }
-    var showWelcome by remember { mutableStateOf(!SettingsStorage.isWelcomeShown(context)) }
 
     val progressList by progressRepository.allProgress
         .collectAsState(initial = emptyList())
@@ -327,10 +347,7 @@ fun DartsApp(
         }
 
         if (showWelcome) {
-            WelcomeDialog(onClose = {
-                SettingsStorage.setWelcomeShown(context)
-                showWelcome = false
-            })
+            WelcomeDialog(onClose = onWelcomeClose)
         }
 
         toastMessage?.let { msg ->
