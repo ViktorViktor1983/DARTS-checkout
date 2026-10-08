@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +44,6 @@ import com.example.dartscheckout.data.readTextFromUri
 import com.example.dartscheckout.data.writeTextToUri
 import com.example.dartscheckout.theme.Accent
 import com.example.dartscheckout.theme.DarkBg
-import com.example.dartscheckout.theme.GoldAccent
 import com.example.dartscheckout.theme.TileBgDark
 import com.example.dartscheckout.ui.*
 import kotlinx.coroutines.delay
@@ -74,8 +74,8 @@ fun RootWithSplash(
     val alpha = remember { Animatable(1f) }
 
     LaunchedEffect(Unit) {
-        delay(2000)
-        alpha.animateTo(0f, animationSpec = tween(500))
+        delay(3000)
+        alpha.animateTo(0f, animationSpec = tween(1000))
         showSplash = false
     }
 
@@ -97,23 +97,12 @@ fun SplashContent(alpha: Float) {
             .background(DarkBg),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(
-                painter = painterResource(id = R.drawable.splash_logo),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth(0.7f)
-                    .aspectRatio(1f)
-            )
-            Spacer(Modifier.height(20.dp))
-            Text(
-                "Darts Checkout",
-                color = GoldAccent,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 3.sp
-            )
-        }
+        Image(
+            painter = painterResource(id = R.drawable.splash_logo),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }
 
