@@ -31,13 +31,13 @@ import com.example.dartscheckout.data.CheckoutVariant
 import com.example.dartscheckout.data.SettingsStorage
 import com.example.dartscheckout.data.checkoutsToJson
 import com.example.dartscheckout.data.db.AppDatabase
+import com.example.dartscheckout.data.db.CheckoutProgressRepository
 import com.example.dartscheckout.data.db.CheckoutRepository
 import com.example.dartscheckout.data.jsonToCheckouts
 import com.example.dartscheckout.data.readTextFromUri
 import com.example.dartscheckout.data.writeTextToUri
 import com.example.dartscheckout.theme.Accent
 import com.example.dartscheckout.theme.DarkBg
-import com.example.dartscheckout.theme.TileBg
 import com.example.dartscheckout.theme.TileBgDark
 import com.example.dartscheckout.ui.*
 import kotlinx.coroutines.launch
@@ -45,12 +45,13 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val dao = AppDatabase.get(this).checkoutDao()
-        val repository = CheckoutRepository(dao)
+        val db = AppDatabase.get(this)
+        val repository = CheckoutRepository(db.checkoutDao())
+        val progressRepository = CheckoutProgressRepository(db.checkoutProgressDao())
         setContent {
             MaterialTheme(colorScheme = darkColorScheme()) {
                 Surface(modifier = Modifier.fillMaxSize(), color = DarkBg) {
-                    DartsApp(repository)
+                    DartsApp(repository, progressRepository)
                 }
             }
         }
@@ -58,7 +59,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun DartsApp(repository: CheckoutRepository) {
+fun DartsApp(
+    repository: CheckoutRepository,
+    progressRepository: CheckoutProgressRepository
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val checkouts = remember { mutableStateMapOf<Int, List<CheckoutVariant>>() }
@@ -72,6 +76,11 @@ fun DartsApp(repository: CheckoutRepository) {
 
     var sortDescending by remember { mutableStateOf(SettingsStorage.isSortDescending(context)) }
     var showWelcome by remember { mutableStateOf(!SettingsStorage.isWelcomeShown(context)) }
+
+    // Данные для экрана «Мои закрытия»
+    val progressList by progressRepository.allProgress
+        .collectAsState(initial = emptyList())
+    var progressMode by remember { mutableStateOf(ProgressMode.TRAINING) }
 
     LaunchedEffect(Unit) {
         repository.seedIfEmpty()
@@ -141,7 +150,30 @@ fun DartsApp(repository: CheckoutRepository) {
                 onRangeClick = { range -> selectedRange = range; screen = "range" },
                 onSettings = { screen = "settings" },
                 onHelp = { screen = "help" },
-                onCalculator = { screen = "calc" }
+                onCalculator = { screen = "calc" },
+                onMyCheckouts = { screen = "my_checkouts" }
+            )
+            screen == "my_checkouts" -> MyCheckoutsScreen(
+                progress = progressList,
+                mode = progressMode,
+                onModeChange = { progressMode = it },
+                onIncrement = { num ->
+                    scope.launch {
+                        if (progressMode == ProgressMode.TRAINING)
+                            progressRepository.incrementTraining(num)
+                        else
+                            progressRepository.incrementCompetition(num)
+                    }
+                },
+                onDecrement = { num ->
+                    scope.launch {
+                        if (progressMode == ProgressMode.TRAINING)
+                            progressRepository.decrementTraining(num)
+                        else
+                            progressRepository.decrementCompetition(num)
+                    }
+                },
+                onBack = { screen = "main" }
             )
             screen == "range" -> RangeScreen(
                 range = selectedRange,
