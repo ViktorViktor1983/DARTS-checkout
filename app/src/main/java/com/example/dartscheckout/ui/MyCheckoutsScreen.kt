@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,6 +49,7 @@ fun MyCheckoutsScreen(
 
     var actionFor by remember { mutableStateOf<Int?>(null) }
     var infoFor by remember { mutableStateOf<Int?>(null) }
+    var showHelp by remember { mutableStateOf(false) }
 
     val total = ALL_NUMBERS.size
     val closedCount = ALL_NUMBERS.count { num ->
@@ -74,7 +78,28 @@ fun MyCheckoutsScreen(
             ) {
                 Text("← Назад", color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
+
+            Spacer(Modifier.width(10.dp))
+
+            // Кнопка «?» в кружочке
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(Accent)
+                    .clickable { showHelp = true },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "?",
+                    color = Color(0xFF121212),
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
             Spacer(Modifier.weight(1f))
+
             Text(
                 "Осталось $remainPercent%",
                 color = GoldAccent,
@@ -259,6 +284,103 @@ fun MyCheckoutsScreen(
                     textColor = Color(0xFF121212)
                 ) {
                     infoFor = null
+                }
+            }
+        }
+    }
+
+    // Диалог помощи «?»
+    if (showHelp) {
+        Dialog(onDismissRequest = { showHelp = false }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(TileBgDark)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                ) {
+                    Text(
+                        "Зачем нужен этот раздел?",
+                        color = GoldAccent,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(Modifier.height(14.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 460.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            "Здесь ты отмечаешь, какие чекауты уже закрывал. Это нужно не для статистики ради — а для твоей уверенности.",
+                            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+                        )
+                        Text(
+                            "Когда ты видишь, что закрывал это число 3, 5, 10 раз — мозг перестаёт бояться. Ты уже делал это раньше, значит сможешь и сейчас.",
+                            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+                        )
+
+                        Spacer(Modifier.height(6.dp))
+
+                        Text(
+                            "Как отмечать:",
+                            color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "1. Выбери вкладку — Тренировка или Соревнования.\n" +
+                            "2. Найди нужное число в таблице.\n" +
+                            "3. Долго удержи палец на числе (около 2 секунд) — откроется меню.\n" +
+                            "4. Нажми «Закрыл +1», если закрыл. Или «Ошибся −1», если нажал случайно.",
+                            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+                        )
+
+                        Spacer(Modifier.height(6.dp))
+
+                        Text(
+                            "Цвета подскажут твой прогресс:",
+                            color = Accent, fontSize = 14.sp, fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "• Серый — пока не закрывал\n" +
+                            "• Светло-зелёный — 1–2 раза\n" +
+                            "• Зелёный — 3–4 раза\n" +
+                            "• Жёлтый — 5–9 раз\n" +
+                            "• Красный — 10–49 раз\n" +
+                            "• Фиолетовый — 50+ раз (мастер!)",
+                            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+                        )
+
+                        Spacer(Modifier.height(6.dp))
+
+                        Text(
+                            "Цель: закрыть все 162 чекаута. Золотые проценты вверху покажут, сколько осталось.",
+                            color = Color.White, fontSize = 14.sp, lineHeight = 20.sp
+                        )
+                        Text(
+                            "Чем больше закрываешь — тем увереннее играешь. Удачи! 🎯",
+                            color = GoldAccent, fontSize = 14.sp, fontWeight = FontWeight.Bold, lineHeight = 20.sp
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    DialogButton(
+                        label = "Понятно",
+                        bg = Accent,
+                        textColor = Color(0xFF121212)
+                    ) {
+                        showHelp = false
+                    }
                 }
             }
         }
