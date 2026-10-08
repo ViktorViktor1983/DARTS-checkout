@@ -6,6 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,7 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,8 +43,10 @@ import com.example.dartscheckout.data.readTextFromUri
 import com.example.dartscheckout.data.writeTextToUri
 import com.example.dartscheckout.theme.Accent
 import com.example.dartscheckout.theme.DarkBg
+import com.example.dartscheckout.theme.GoldAccent
 import com.example.dartscheckout.theme.TileBgDark
 import com.example.dartscheckout.ui.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -51,9 +58,61 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme(colorScheme = darkColorScheme()) {
                 Surface(modifier = Modifier.fillMaxSize(), color = DarkBg) {
-                    DartsApp(repository, progressRepository)
+                    RootWithSplash(repository, progressRepository)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun RootWithSplash(
+    repository: CheckoutRepository,
+    progressRepository: CheckoutProgressRepository
+) {
+    var showSplash by remember { mutableStateOf(true) }
+    val alpha = remember { Animatable(1f) }
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        alpha.animateTo(0f, animationSpec = tween(500))
+        showSplash = false
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        DartsApp(repository, progressRepository)
+
+        if (showSplash) {
+            SplashContent(alpha = alpha.value)
+        }
+    }
+}
+
+@Composable
+fun SplashContent(alpha: Float) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer { this.alpha = alpha }
+            .background(DarkBg),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter = painterResource(id = R.drawable.splash_logo),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth(0.7f)
+                    .aspectRatio(1f)
+            )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                "Darts Checkout",
+                color = GoldAccent,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 3.sp
+            )
         }
     }
 }
@@ -77,7 +136,6 @@ fun DartsApp(
     var sortDescending by remember { mutableStateOf(SettingsStorage.isSortDescending(context)) }
     var showWelcome by remember { mutableStateOf(!SettingsStorage.isWelcomeShown(context)) }
 
-    // Данные для экрана «Мои закрытия»
     val progressList by progressRepository.allProgress
         .collectAsState(initial = emptyList())
     var progressMode by remember { mutableStateOf(ProgressMode.TRAINING) }
@@ -288,7 +346,7 @@ fun DartsApp(
 
         toastMessage?.let { msg ->
             LaunchedEffect(msg) {
-                kotlinx.coroutines.delay(2000)
+                delay(2000)
                 toastMessage = null
             }
             Box(
